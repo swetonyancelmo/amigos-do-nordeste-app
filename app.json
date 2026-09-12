@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Cadastro Amigos do Nordeste",
+    "slug": "cadastro-familias-app",
+    "scheme": "cadastroand",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FAF6F1",
+    "android": {
+      "package": "br.org.amigosdonordeste.cadastro",
+      "versionCode": 1,
+      "adaptiveIcon": { "backgroundColor": "#E54314" }
+    },
+    "plugins": ["expo-router", "expo-sqlite", "expo-secure-store"],
+    "extra": {
+      "apiUrl": "https://cadastro-familias-api.exemplo.com.br"
+    }
+  }
+}

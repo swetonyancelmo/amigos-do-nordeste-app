@@ -1,0 +1,37 @@
+{
+  "name": "cadastro-familias-app",
+  "version": "0.1.0",
+  "main": "expo-router/entry",
+  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "apk": "eas build -p android --profile apk",
+    "lint": "expo lint",
+    "teste": "jest"
+  },
+  "dependencies": {
+    "expo": "*",
+    "expo-constants": "~57.0.18",
+    "expo-crypto": "*",
+    "expo-linking": "~57.0.10",
+    "expo-network": "*",
+    "expo-router": "*",
+    "expo-secure-store": "*",
+    "expo-sqlite": "*",
+    "expo-status-bar": "*",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-gesture-handler": "~2.32.0",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-worklets": "0.10.1"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.4",
+    "jest": "*",
+    "jest-expo": "*",
+    "typescript": "~6.0.3"
+  }
+}
