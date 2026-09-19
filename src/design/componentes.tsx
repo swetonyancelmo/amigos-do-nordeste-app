@@ -67,23 +67,75 @@ export function Botao({
 
 /* ------------------------------------------------------------------ Campo */
 
+/** `erro` toma o lugar da dica e pinta a borda: a agente vê onde está o problema. */
 export function Campo({
   rotulo,
   dica,
+  erro,
   ...props
-}: { rotulo: string; dica?: string } & TextInputProps) {
+}: { rotulo: string; dica?: string; erro?: string } & TextInputProps) {
   return (
     <View style={{ gap: esp.sm }}>
       <Text style={e.rotulo}>{rotulo.toUpperCase()}</Text>
       <TextInput
         placeholderTextColor={cores.apagado}
-        style={e.campo}
+        style={[e.campo, erro ? e.campoComErro : null]}
         // teclado sempre visível e sem correção automática: nome de pessoa do
         // sertão não está no dicionário do celular e o corretor atrapalha.
         autoCorrect={false}
+        accessibilityLabel={rotulo}
+        accessibilityHint={erro ?? dica}
         {...props}
       />
-      {dica ? <Text style={e.dica}>{dica}</Text> : null}
+      {erro ? (
+        <Text style={e.erro} accessibilityLiveRegion="polite">
+          {erro}
+        </Text>
+      ) : dica ? (
+        <Text style={e.dica}>{dica}</Text>
+      ) : null}
+    </View>
+  );
+}
+
+/* ----------------------------------------------------------------- Marcar */
+
+/** Caixa de marcar numa linha inteira tocável, do mesmo tamanho de uma opção. */
+export function Marcar({
+  titulo,
+  marcado,
+  aoMudar,
+}: {
+  titulo: string;
+  marcado: boolean;
+  aoMudar: (marcado: boolean) => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: marcado }}
+      onPress={() => aoMudar(!marcado)}
+      style={({ pressed }) => [e.opcao, marcado && e.opcaoMarcada, pressed && { opacity: 0.85 }]}>
+      <View style={[e.caixa, marcado && e.caixaCheia]}>
+        {marcado ? <Text style={e.caixaVisto}>✓</Text> : null}
+      </View>
+      <Text style={e.opcaoTexto}>{titulo}</Text>
+    </Pressable>
+  );
+}
+
+/* --------------------------------------------------------------- Destaque */
+
+/**
+ * Bloco laranja que chama atenção para uma saída importante dentro de um
+ * formulário (ex.: "não sabe a data? ponha a idade aproximada"). Diferente de
+ * `Aviso`, aceita campos dentro.
+ */
+export function Destaque({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+  return (
+    <View style={e.destaque}>
+      <Text style={e.destaqueTitulo}>{titulo}</Text>
+      {children}
     </View>
   );
 }
@@ -285,7 +337,31 @@ const e = StyleSheet.create({
     fontSize: 18,
     color: cores.tinta,
   },
+  campoComErro: { borderWidth: 2, borderColor: cores.laranja },
   dica: { ...texto.apoio, color: cores.apagado },
+  erro: { ...texto.apoio, fontWeight: '600', color: cores.laranja },
+
+  caixa: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: cores.linha,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  caixaCheia: { backgroundColor: cores.tinta, borderColor: cores.tinta },
+  caixaVisto: { color: cores.branco, fontSize: 16, fontWeight: '700' },
+
+  destaque: {
+    borderRadius: raio.lg,
+    borderWidth: 2,
+    borderColor: cores.laranja,
+    backgroundColor: cores.laranjaSuave,
+    padding: esp.md,
+    gap: esp.md,
+  },
+  destaqueTitulo: { ...texto.corpoForte, color: cores.laranja },
 
   opcao: {
     minHeight: ALVO_MINIMO,
