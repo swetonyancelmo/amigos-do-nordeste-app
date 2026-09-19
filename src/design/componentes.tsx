@@ -1,5 +1,5 @@
 /**
- * Os quatro componentes que todas as telas usam.
+ * Os componentes que todas as telas usam.
  *
  * Se uma tela precisar de um botão diferente, acrescente uma variante aqui —
  * não escreva estilo solto na tela. É isso que mantém o alvo de toque grande
@@ -20,7 +20,8 @@ import { ALVO_MINIMO, cores, esp, raio, texto } from './tokens';
 
 /* ------------------------------------------------------------------ Botão */
 
-type VarianteBotao = 'primario' | 'confirmar' | 'contorno';
+/** `tracejado` é o "adicionar mais um": convite, não ação principal. */
+type VarianteBotao = 'primario' | 'confirmar' | 'contorno' | 'tracejado';
 
 export function Botao({
   titulo,
@@ -38,9 +39,9 @@ export function Botao({
   estilo?: ViewStyle;
 }) {
   const inativo = desabilitado || carregando;
-  const fundo =
-    variante === 'confirmar' ? cores.verde : variante === 'contorno' ? 'transparent' : cores.laranja;
-  const corTexto = variante === 'contorno' ? cores.tinta : cores.branco;
+  const vazado = variante === 'contorno' || variante === 'tracejado';
+  const fundo = variante === 'confirmar' ? cores.verde : vazado ? 'transparent' : cores.laranja;
+  const corTexto = vazado ? cores.tinta : cores.branco;
 
   return (
     <Pressable
@@ -52,6 +53,7 @@ export function Botao({
         e.botao,
         { backgroundColor: fundo, opacity: inativo ? 0.5 : pressed ? 0.85 : 1 },
         variante === 'contorno' && { borderWidth: 2, borderColor: cores.tinta },
+        variante === 'tracejado' && { borderWidth: 2, borderColor: cores.apagado, borderStyle: 'dashed' },
         estilo,
       ]}>
       {carregando ? (
@@ -82,6 +84,49 @@ export function Campo({
         {...props}
       />
       {dica ? <Text style={e.dica}>{dica}</Text> : null}
+    </View>
+  );
+}
+
+/* ------------------------------------------------------------- ItemLista */
+
+/**
+ * Uma linha de lista que abre algo ao tocar, com uma ação secundária opcional
+ * à direita (ex.: "Remover"). A ação tem alvo de toque próprio, separado da
+ * linha, para não abrir a pessoa quando a intenção era remover — e vice-versa.
+ */
+export function ItemLista({
+  titulo,
+  detalhe,
+  selo,
+  aoTocar,
+  acao,
+}: {
+  titulo: string;
+  detalhe?: string;
+  selo?: React.ReactNode;
+  aoTocar: () => void;
+  acao?: { titulo: string; aoTocar: () => void; rotuloAcessivel?: string };
+}) {
+  return (
+    <View style={e.item}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={aoTocar}
+        style={({ pressed }) => [e.itemCorpo, pressed && { opacity: 0.85 }]}>
+        <Text style={e.itemTitulo}>{titulo}</Text>
+        {detalhe ? <Text style={e.dica}>{detalhe}</Text> : null}
+        {selo}
+      </Pressable>
+      {acao ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={acao.rotuloAcessivel ?? acao.titulo}
+          onPress={acao.aoTocar}
+          style={({ pressed }) => [e.itemAcao, pressed && { opacity: 0.6 }]}>
+          <Text style={e.itemAcaoTexto}>{acao.titulo}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -201,6 +246,33 @@ const e = StyleSheet.create({
     paddingHorizontal: esp.lg,
   },
   botaoTexto: { fontSize: 19, fontWeight: '600' },
+
+  item: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    borderRadius: raio.md,
+    borderWidth: 1.5,
+    borderColor: cores.linha,
+    backgroundColor: cores.branco,
+  },
+  itemCorpo: {
+    flex: 1,
+    minHeight: ALVO_MINIMO + 16,
+    justifyContent: 'center',
+    gap: esp.xs,
+    paddingHorizontal: esp.md,
+    paddingVertical: esp.sm,
+  },
+  itemTitulo: { ...texto.corpoForte, color: cores.tinta },
+  itemAcao: {
+    minWidth: ALVO_MINIMO + 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderLeftWidth: 1.5,
+    borderLeftColor: cores.linha,
+    paddingHorizontal: esp.sm,
+  },
+  itemAcaoTexto: { fontSize: 16, fontWeight: '600', color: cores.laranja },
 
   rotulo: { ...texto.rotulo, color: cores.apagado },
   campo: {
