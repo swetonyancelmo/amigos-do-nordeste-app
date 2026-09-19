@@ -20,7 +20,7 @@ export function hojeLocal(agora: Date = new Date()): string {
 }
 
 /** Anos completos entre duas datas AAAA-MM-DD. */
-function anosCompletos(de: string, ate: string): number {
+export function anosCompletos(de: string, ate: string): number {
   const [a1, m1, d1] = de.split('-').map(Number);
   const [a2, m2, d2] = ate.split('-').map(Number);
   const aindaNaoFezAniversario = m2 < m1 || (m2 === m1 && d2 < d1);
