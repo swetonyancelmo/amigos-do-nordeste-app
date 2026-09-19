@@ -80,9 +80,25 @@ export default function Pessoas() {
           cadastroAtual.current = novo;
           setCadastro(novo);
           gravador.agendar(novo);
+          void voltarAoBancoSeFalhar();
         },
       },
     ]);
+  }
+
+  /**
+   * Se a gravação falhou, o gravador descarta o valor, mas a pessoa já tinha
+   * sumido da tela. Relê o banco para a tela mostrar quem continua gravado —
+   * senão ela some da lista e a agente não tem como "tentar remover de novo".
+   */
+  async function voltarAoBancoSeFalhar() {
+    if (!id || (await gravador.esvaziar())) return;
+    const antes = cadastroAtual.current;
+    const noBanco = await buscar(id).catch(() => null);
+    // uma remoção feita enquanto relia é mais nova que o banco: não a desfaz
+    if (!noBanco || cadastroAtual.current !== antes) return;
+    cadastroAtual.current = noBanco;
+    setCadastro(noBanco);
   }
 
   /** Só sai da tela quando a última remoção já chegou ao banco. */
@@ -153,8 +169,8 @@ export default function Pessoas() {
         />
 
         {erroAoGuardar ? (
-          <Aviso titulo="Não consegui guardar" tom="erro">
-            A remoção ainda não foi salva no celular. Tente remover de novo.
+          <Aviso titulo="Não consegui remover" tom="erro">
+            A remoção não foi salva no celular e a pessoa continua na lista. Tente remover de novo.
           </Aviso>
         ) : null}
       </ScrollView>
