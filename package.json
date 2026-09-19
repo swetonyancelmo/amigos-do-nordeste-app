@@ -33,5 +33,8 @@
     "jest": "*",
     "jest-expo": "*",
     "typescript": "~6.0.3"
+  },
+  "jest": {
+    "preset": "jest-expo"
   }
 }
