@@ -145,6 +145,18 @@ export async function buscar(id: string): Promise<PreCadastro | null> {
   return montar(l, pessoas);
 }
 
+/**
+ * O cadastro que ficou pela metade mais recentemente. É o que a tela do
+ * Passo 1 retoma quando a agente fecha o app no meio e volta depois.
+ */
+export async function buscarRascunhoAberto(): Promise<PreCadastro | null> {
+  const db = await abrirBanco();
+  const l = await db.getFirstAsync<{ id: string }>(
+    "SELECT id FROM pre_cadastro WHERE situacao = 'RASCUNHO' ORDER BY atualizado_em DESC LIMIT 1",
+  );
+  return l ? buscar(l.id) : null;
+}
+
 /** O que ainda não foi para o servidor. É este número que a tela inicial mostra. */
 export async function listarPendentes(): Promise<PreCadastro[]> {
   const todos = await listarTodos();

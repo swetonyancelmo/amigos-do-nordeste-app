@@ -86,6 +86,69 @@ export function Campo({
   );
 }
 
+/* ----------------------------------------------------------------- Opções */
+
+/**
+ * Escolha de uma opção numa lista curta. Linhas inteiras tocáveis em vez de
+ * um picker do sistema: o picker abre um menu miúdo, difícil de acertar com
+ * uma mão só.
+ */
+export function Opcoes<T extends string>({
+  rotulo,
+  opcoes,
+  selecionado,
+  aoEscolher,
+}: {
+  rotulo: string;
+  opcoes: ReadonlyArray<{ valor: T; titulo: string }>;
+  selecionado: T | null;
+  aoEscolher: (valor: T) => void;
+}) {
+  return (
+    <View style={{ gap: esp.sm }} accessibilityRole="radiogroup" accessibilityLabel={rotulo}>
+      <Text style={e.rotulo}>{rotulo.toUpperCase()}</Text>
+      {opcoes.map(o => {
+        const marcado = o.valor === selecionado;
+        return (
+          <Pressable
+            key={o.valor}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: marcado }}
+            onPress={() => aoEscolher(o.valor)}
+            style={({ pressed }) => [
+              e.opcao,
+              marcado && e.opcaoMarcada,
+              pressed && { opacity: 0.85 },
+            ]}>
+            <View style={[e.marcador, marcado && e.marcadorCheio]} />
+            <Text style={e.opcaoTexto}>{o.titulo}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/* -------------------------------------------------------------- Progresso */
+
+export function Progresso({ passo, total }: { passo: number; total: number }) {
+  return (
+    <View
+      style={{ gap: esp.sm }}
+      accessibilityRole="progressbar"
+      accessibilityValue={{ min: 1, max: total, now: passo, text: `${passo} de ${total}` }}>
+      <View style={e.trilho}>
+        {Array.from({ length: total }, (_, i) => (
+          <View key={i} style={[e.segmento, i < passo && e.segmentoFeito]} />
+        ))}
+      </View>
+      <Text style={e.rotulo}>
+        {passo} DE {total}
+      </Text>
+    </View>
+  );
+}
+
 /* ------------------------------------------------------------------- Selo */
 
 export function Selo({ texto: t, tom }: { texto: string; tom: 'espera' | 'aceito' | 'devolvido' }) {
@@ -151,6 +214,32 @@ const e = StyleSheet.create({
     color: cores.tinta,
   },
   dica: { ...texto.apoio, color: cores.apagado },
+
+  opcao: {
+    minHeight: ALVO_MINIMO,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: esp.md,
+    borderRadius: raio.md,
+    borderWidth: 1.5,
+    borderColor: cores.linha,
+    backgroundColor: cores.branco,
+    paddingHorizontal: esp.md,
+  },
+  opcaoMarcada: { borderWidth: 2, borderColor: cores.tinta },
+  opcaoTexto: { ...texto.corpo, color: cores.tinta, flex: 1 },
+  marcador: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: cores.linha,
+  },
+  marcadorCheio: { borderWidth: 7, borderColor: cores.tinta },
+
+  trilho: { flexDirection: 'row', gap: esp.xs },
+  segmento: { flex: 1, height: 6, borderRadius: 3, backgroundColor: cores.linha },
+  segmentoFeito: { backgroundColor: cores.laranja },
 
   selo: { alignSelf: 'flex-start', borderRadius: raio.sm, paddingHorizontal: 10, paddingVertical: 5 },
   seloTexto: { fontSize: 12, fontWeight: '700' },
