@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { Aviso, Botao, Campo, Destaque, Marcar, Opcoes, Progresso } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import { buscar, novoId, salvarRascunho } from '@/dados/fila';
@@ -17,7 +17,7 @@ import {
   type FormPessoa,
 } from '@/dados/formPessoa';
 import { criarGravador } from '@/dados/gravador';
-import { hojeLocal, idadeEm } from '@/dados/idade';
+import { anosCompletos, hojeLocal } from '@/dados/idade';
 import type { Pessoa, Sexo } from '@/dados/tipos';
 
 /**
@@ -31,6 +31,10 @@ import type { Pessoa, Sexo } from '@/dados/tipos';
  * Como nas outras telas, o que está na tela vai para o banco a cada mudança —
  * mas só enquanto é válido. Uma data pela metade não apaga a que já estava
  * gravada.
+ *
+ * Sair da tela por qualquer caminho (Salvar, voltar do Android, gesto) espera
+ * a última escrita chegar ao banco. Senão a lista do Passo 2 relê o cadastro
+ * antes dela e mostra — e pode regravar, numa remoção — a pessoa antiga.
  */
 
 const OPCOES_SEXO: readonly { valor: Sexo; titulo: string }[] = [
@@ -43,6 +47,7 @@ type Gravacao = { id: string; pessoaId: string; dados: DadosPessoa };
 export default function PessoaDaCasa() {
   const { id, pessoaId: pessoaIdDaRota } = useLocalSearchParams<{ id?: string; pessoaId?: string }>();
   const router = useRouter();
+  const navigation = useNavigation();
 
   const [pessoaId] = useState(() => pessoaIdDaRota ?? novoId());
   const [responsavel, setResponsavel] = useState<string | null>(null);
@@ -58,6 +63,8 @@ export default function PessoaDaCasa() {
   const formAtual = useRef(FORM_VAZIO);
   // Abrir "adicionar" e voltar sem tocar em nada não cria pessoa vazia.
   const jaGravado = useRef(false);
+  // a saída já esperou o gravador: deixa a navegação seguir sem segurar de novo
+  const saidaLiberada = useRef(false);
 
   const [gravador] = useState(() =>
     criarGravador<Gravacao>(
@@ -107,6 +114,34 @@ export default function PessoaDaCasa() {
       vivo = false;
     };
   }, [id, pessoaIdDaRota]);
+
+  useEffect(
+    () =>
+      navigation.addListener('beforeRemove', ev => {
+        if (saidaLiberada.current) return;
+        ev.preventDefault();
+        void gravador.esvaziar().then(ok => {
+          if (ok) {
+            saidaLiberada.current = true;
+            navigation.dispatch(ev.data.action);
+            return;
+          }
+          // a última escrita falhou: sair agora perderia o que está na tela
+          Alert.alert('Não consegui guardar', 'A última mudança desta pessoa não foi salva no celular.', [
+            { text: 'Ficar e tentar de novo', style: 'cancel' },
+            {
+              text: 'Sair sem salvar',
+              style: 'destructive',
+              onPress: () => {
+                saidaLiberada.current = true;
+                navigation.dispatch(ev.data.action);
+              },
+            },
+          ]);
+        });
+      }),
+    [navigation, gravador],
+  );
 
   function mudar(parcial: Partial<FormPessoa>) {
     if (!id) return;
@@ -163,7 +198,7 @@ export default function PessoaDaCasa() {
   const erroData = tentouSalvar || dataCompleta(form.dataNascimento) ? erros.dataNascimento : undefined;
 
   const nascimento = erros.dataNascimento ? null : lerData(form.dataNascimento);
-  const idadePelaData = nascimento ? idadeEm({ ...PESSOA_VAZIA, dataNascimento: nascimento }, hoje) : null;
+  const idadePelaData = nascimento ? anosCompletos(nascimento, hoje) : null;
 
   const temIdade = form.idadeAproximada.trim() !== '';
   const temData = form.dataNascimento.trim() !== '';
@@ -245,17 +280,6 @@ export default function PessoaDaCasa() {
     </ScrollView>
   );
 }
-
-const PESSOA_VAZIA: Pessoa = {
-  id: '',
-  nome: null,
-  cadastroIncompleto: false,
-  sexo: null,
-  dataNascimento: null,
-  idadeEstimada: null,
-  idadeEstimadaEm: null,
-  ordem: 0,
-};
 
 function descreverAnos(n: number): string {
   return n === 0 ? 'menos de 1 ano' : n === 1 ? '1 ano' : `${n} anos`;

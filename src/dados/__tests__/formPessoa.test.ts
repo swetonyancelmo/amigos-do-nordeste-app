@@ -129,6 +129,12 @@ describe('data de nascimento', () => {
     }
   });
 
+  test('o limite de idade conta a data inteira, não só o ano', () => {
+    expect(validarPessoa(form({ dataNascimento: '31/12/1895' }), HOJE).ok).toBe(true); // 130
+    expect(validarPessoa(form({ dataNascimento: '20/09/1895' }), HOJE).ok).toBe(true); // 130
+    expect(erros(validarPessoa(form({ dataNascimento: '19/09/1895' }), HOJE)).dataNascimento).toBeDefined(); // 131
+  });
+
   test('não dá para salvar com data de nascimento e idade aproximada juntas', () => {
     const e = erros(validarPessoa(form({ dataNascimento: '12/03/2019', idadeAproximada: '7' }), HOJE));
     expect(e.idadeAproximada).toMatch(/só um/);

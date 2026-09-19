@@ -11,7 +11,7 @@
  * - exigir data de nascimento: a maior parte dos papéis chega sem ela;
  * - exigir nome: "filha de Jane" é cadastro de verdade, marcado incompleto.
  */
-import { idadeEm } from './idade';
+import { anosCompletos, idadeEm } from './idade';
 import type { Pessoa, Sexo } from './tipos';
 
 /** Acima disso é erro de digitação, não pessoa. */
@@ -135,7 +135,8 @@ export function validarPessoa(f: FormPessoa, hoje: string, anterior: Pessoa | nu
       erros.dataNascimento = 'Essa data não existe. Confira o dia e o mês.';
     } else if (dataNascimento > hoje) {
       erros.dataNascimento = 'A data está no futuro. Confira o ano.';
-    } else if (Number(hoje.slice(0, 4)) - Number(dataNascimento.slice(0, 4)) > IDADE_MAXIMA) {
+    } else if (anosCompletos(dataNascimento, hoje) > IDADE_MAXIMA) {
+      // pela data inteira, não só pelo ano: quem faz 131 em dezembro ainda tem 130
       erros.dataNascimento = 'Ano muito antigo. Confira o ano.';
     }
   }
