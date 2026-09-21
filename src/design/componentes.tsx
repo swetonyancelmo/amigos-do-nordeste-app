@@ -146,6 +146,9 @@ export function Destaque({ titulo, children }: { titulo: string; children: React
  * Uma linha de lista que abre algo ao tocar, com uma ação secundária opcional
  * à direita (ex.: "Remover"). A ação tem alvo de toque próprio, separado da
  * linha, para não abrir a pessoa quando a intenção era remover — e vice-versa.
+ *
+ * Sem `aoTocar` a linha só mostra: não finge ser botão para quem não tem o que
+ * abrir (ex.: cadastro já aceito).
  */
 export function ItemLista({
   titulo,
@@ -157,19 +160,28 @@ export function ItemLista({
   titulo: string;
   detalhe?: string;
   selo?: React.ReactNode;
-  aoTocar: () => void;
+  aoTocar?: () => void;
   acao?: { titulo: string; aoTocar: () => void; rotuloAcessivel?: string };
 }) {
+  const corpo = (
+    <>
+      <Text style={e.itemTitulo}>{titulo}</Text>
+      {detalhe ? <Text style={e.dica}>{detalhe}</Text> : null}
+      {selo}
+    </>
+  );
   return (
     <View style={e.item}>
-      <Pressable
-        accessibilityRole="button"
-        onPress={aoTocar}
-        style={({ pressed }) => [e.itemCorpo, pressed && { opacity: 0.85 }]}>
-        <Text style={e.itemTitulo}>{titulo}</Text>
-        {detalhe ? <Text style={e.dica}>{detalhe}</Text> : null}
-        {selo}
-      </Pressable>
+      {aoTocar ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={aoTocar}
+          style={({ pressed }) => [e.itemCorpo, pressed && { opacity: 0.85 }]}>
+          {corpo}
+        </Pressable>
+      ) : (
+        <View style={e.itemCorpo}>{corpo}</View>
+      )}
       {acao ? (
         <Pressable
           accessibilityRole="button"
