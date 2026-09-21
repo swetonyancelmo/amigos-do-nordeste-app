@@ -5,7 +5,7 @@ import { Aviso, Botao, ItemLista, Progresso, Selo } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import { buscar, salvarRascunho } from '@/dados/fila';
 import { criarGravador } from '@/dados/gravador';
-import { descreverTotal, hojeLocal, idadeEm, totalDaCasa } from '@/dados/idade';
+import { descreverPessoa, descreverTotal, hojeLocal, totalDaCasa } from '@/dados/idade';
 import type { Pessoa, PreCadastro } from '@/dados/tipos';
 
 /**
@@ -188,21 +188,6 @@ export default function Pessoas() {
       </View>
     </View>
   );
-}
-
-/** "Feminino · uns 7 anos" */
-function descreverPessoa(p: Pessoa, hoje: string): string {
-  const partes: string[] = [];
-  if (p.sexo) partes.push(p.sexo === 'F' ? 'Feminino' : 'Masculino');
-
-  const idade = idadeEm(p, hoje);
-  if (idade === null) {
-    partes.push('Sem idade');
-  } else {
-    const anos = idade === 0 ? 'menos de 1 ano' : idade === 1 ? '1 ano' : `${idade} anos`;
-    partes.push(p.dataNascimento ? anos : `uns ${anos}`);
-  }
-  return partes.join(' · ');
 }
 
 const e = StyleSheet.create({

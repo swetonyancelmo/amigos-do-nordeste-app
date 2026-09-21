@@ -74,3 +74,18 @@ export function descreverTotal(t: TotalDaCasa): string {
   if (t.semIdade > 0) partes.push(`${t.semIdade} sem idade`);
   return partes.join(' · ');
 }
+
+/** "Feminino · uns 7 anos" */
+export function descreverPessoa(p: Pessoa, hoje: string): string {
+  const partes: string[] = [];
+  if (p.sexo) partes.push(p.sexo === 'F' ? 'Feminino' : 'Masculino');
+
+  const idade = idadeEm(p, hoje);
+  if (idade === null) {
+    partes.push('Sem idade');
+  } else {
+    const anos = idade === 0 ? 'menos de 1 ano' : idade === 1 ? '1 ano' : `${idade} anos`;
+    partes.push(p.dataNascimento ? anos : `uns ${anos}`);
+  }
+  return partes.join(' · ');
+}
