@@ -92,6 +92,26 @@ export async function marcarSituacao(
   );
 }
 
+/**
+ * Fecha o rascunho: RASCUNHO → PRONTO. É isso que põe o cadastro na fila de
+ * envio (e no contador da tela inicial).
+ *
+ * Só mexe em RASCUNHO ou PRONTO — tocar "salvar" duas vezes não faz mal, mas
+ * um cadastro que já foi para o servidor nunca volta para a fila por aqui.
+ * Falso quando nada mudou: o cadastro sumiu ou já estava em outra situação.
+ */
+export async function marcarPronto(id: string): Promise<boolean> {
+  const db = await abrirBanco();
+  const r = await db.runAsync(
+    `UPDATE pre_cadastro
+        SET situacao = 'PRONTO', atualizado_em = ?
+      WHERE id = ? AND situacao IN ('RASCUNHO', 'PRONTO')`,
+    agora(),
+    id,
+  );
+  return r.changes > 0;
+}
+
 export async function apagar(id: string): Promise<void> {
   const db = await abrirBanco();
   await db.runAsync('DELETE FROM pre_cadastro WHERE id = ?', id);
