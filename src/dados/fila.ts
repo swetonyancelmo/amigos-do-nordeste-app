@@ -112,6 +112,28 @@ export async function marcarPronto(id: string): Promise<boolean> {
   return r.changes > 0;
 }
 
+/**
+ * "Corrigir e reenviar" de um cadastro devolvido: DEVOLVIDO → PRONTO, de volta
+ * na fila de envio.
+ *
+ * O motivo fica gravado de propósito: a revisão mostra o que a associação
+ * pediu enquanto a agente corrige. Só some quando o cadastro é enviado de novo
+ * (`marcarSituacao` para ENVIADO limpa o motivo).
+ *
+ * Falso quando nada mudou: o cadastro sumiu ou já não estava devolvido.
+ */
+export async function reabrirDevolvido(id: string): Promise<boolean> {
+  const db = await abrirBanco();
+  const r = await db.runAsync(
+    `UPDATE pre_cadastro
+        SET situacao = 'PRONTO', atualizado_em = ?
+      WHERE id = ? AND situacao = 'DEVOLVIDO'`,
+    agora(),
+    id,
+  );
+  return r.changes > 0;
+}
+
 export async function apagar(id: string): Promise<void> {
   const db = await abrirBanco();
   await db.runAsync('DELETE FROM pre_cadastro WHERE id = ?', id);
@@ -177,16 +199,23 @@ export async function buscarRascunhoAberto(): Promise<PreCadastro | null> {
   return l ? buscar(l.id) : null;
 }
 
-/** O que ainda não foi para o servidor. É este número que a tela inicial mostra. */
+/**
+ * O que está na fila para ir ao servidor. É este número que a tela inicial
+ * mostra.
+ *
+ * Devolvido não entra: mandar de novo sem corrigir só devolveria outra vez.
+ * Ele volta para a fila quando a agente toca em "Corrigir e reenviar"
+ * (`reabrirDevolvido`).
+ */
 export async function listarPendentes(): Promise<PreCadastro[]> {
   const todos = await listarTodos();
-  return todos.filter(p => p.situacao === 'PRONTO' || p.situacao === 'DEVOLVIDO');
+  return todos.filter(p => p.situacao === 'PRONTO');
 }
 
 export async function contarPendentes(): Promise<number> {
   const db = await abrirBanco();
   const r = await db.getFirstAsync<{ n: number }>(
-    "SELECT COUNT(*) AS n FROM pre_cadastro WHERE situacao IN ('PRONTO','DEVOLVIDO')",
+    "SELECT COUNT(*) AS n FROM pre_cadastro WHERE situacao = 'PRONTO'",
   );
   return r?.n ?? 0;
 }

@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { Aviso, Botao, ItemLista, Progresso, Selo } from '@/design/componentes';
+import { Aviso, Botao, Destaque, ItemLista, Progresso, Selo } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
+import { motivoParaMostrar } from '@/dados/devolvido';
 import { buscar, marcarPronto } from '@/dados/fila';
 import { descreverPessoa, descreverTotal, hojeLocal, totalDaCasa } from '@/dados/idade';
 import { revisar } from '@/dados/revisao';
@@ -17,6 +18,9 @@ import type { PreCadastro } from '@/dados/tipos';
  *
  * A tela não edita nada. "Corrigir" abre o passo certo, e o cadastro é relido
  * do banco toda vez que a tela volta a aparecer.
+ *
+ * Um cadastro devolvido que a agente pôs de volta na fila chega aqui ainda
+ * com o motivo da associação, que fica no topo enquanto ela corrige.
  */
 export default function Revisar() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -103,6 +107,14 @@ export default function Revisar() {
         <Progresso passo={3} total={3} />
         <Text style={e.titulo}>Revisar e salvar</Text>
         <Text style={e.p}>Confira com a família antes de salvar. Toque em algo para corrigir.</Text>
+
+        {cadastro.motivoDevolucao !== null ? (
+          <Destaque titulo="A associação devolveu e escreveu">
+            <Text style={e.motivo} selectable>
+              {motivoParaMostrar(cadastro)}
+            </Text>
+          </Destaque>
+        ) : null}
 
         <Text style={e.rotulo}>A FAMÍLIA</Text>
         <ItemLista
@@ -192,6 +204,7 @@ const e = StyleSheet.create({
   tela: { flexGrow: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
   titulo: { ...texto.titulo, color: cores.tinta },
   p: { ...texto.corpo, color: cores.apagado },
+  motivo: { ...texto.corpo, color: cores.tinta },
   rotulo: { ...texto.rotulo, color: cores.apagado, marginTop: esp.sm },
   rodape: {
     padding: esp.lg,
