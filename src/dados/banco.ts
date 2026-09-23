@@ -98,6 +98,16 @@ async function migrar(db: SQLite.SQLiteDatabase) {
   }
 }
 
+/**
+ * Só para os testes: fecha a conexão, para a próxima `abrirBanco()` ler do
+ * disco como se o app tivesse sido fechado e aberto de novo.
+ */
+export async function _fecharParaTeste() {
+  const db = conexao;
+  conexao = null;
+  await db?.closeAsync();
+}
+
 /** Só para os testes: apaga tudo e recria. Nunca chamar em produção. */
 export async function _limparParaTeste() {
   const db = await abrirBanco();
