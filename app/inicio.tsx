@@ -4,7 +4,6 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Aviso, Botao } from '@/design/componentes';
 import { cores, esp, raio, texto } from '@/design/tokens';
 import { contarPendentes } from '@/dados/fila';
-import { sincronizar, type ResumoSincronizacao } from '@/dados/sincronizar';
 import { useSessao } from '@/sessao/sessao';
 
 /**
@@ -19,26 +18,12 @@ export default function Inicio() {
   const router = useRouter();
 
   const [pendentes, setPendentes] = useState(0);
-  const [enviando, setEnviando] = useState(false);
-  const [resumo, setResumo] = useState<ResumoSincronizacao | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       contarPendentes().then(setPendentes);
     }, []),
   );
-
-  async function enviar() {
-    setEnviando(true);
-    setResumo(null);
-    try {
-      const r = await sincronizar();
-      setResumo(r);
-      setPendentes(await contarPendentes());
-    } finally {
-      setEnviando(false);
-    }
-  }
 
   return (
     <View style={e.tela}>
@@ -55,7 +40,7 @@ export default function Inicio() {
               {pendentes === 1 ? 'cadastro esperando envio' : 'cadastros esperando envio'}
             </Text>
           </View>
-          <Botao titulo="Enviar agora" aoTocar={enviar} carregando={enviando} />
+          <Botao titulo="Enviar agora" aoTocar={() => router.push('/enviando')} />
           <Text style={e.miudo}>
             Precisa de internet. Você pode continuar cadastrando sem enviar.
           </Text>
@@ -65,17 +50,6 @@ export default function Inicio() {
           Não há nada esperando no celular.
         </Aviso>
       )}
-
-      {resumo?.semInternet ? (
-        <Aviso titulo="Sem internet agora" tom="atencao">
-          Seus cadastros continuam guardados. Tente de novo quando pegar sinal.
-        </Aviso>
-      ) : null}
-      {resumo && !resumo.semInternet && resumo.comErro > 0 ? (
-        <Aviso titulo="Alguns não foram" tom="erro">
-          {resumo.comErro} cadastro(s) deram erro e continuam na fila.
-        </Aviso>
-      ) : null}
 
       <Pressable
         accessibilityRole="button"

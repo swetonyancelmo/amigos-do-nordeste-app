@@ -48,13 +48,25 @@ export async function apiPost<T>(rota: string, corpo: unknown): Promise<T> {
     }
     return (await resposta.json()) as T;
   } catch (erro) {
-    // fetch abortado por tempo limite conta como falta de rede para o usuário:
-    // a mensagem "sem internet" é mais útil do que "tempo esgotado".
-    if (erro instanceof DOMException && erro.name === 'AbortError') throw new SemInternet();
+    if (eFaltaDeRede(erro)) throw new SemInternet();
     throw erro;
   } finally {
     clearTimeout(relogio);
   }
+}
+
+/**
+ * Para a agente, tempo esgotado e rede que não responde são a mesma coisa:
+ * "sem internet" é mais útil do que "tempo esgotado".
+ *
+ *   - AbortError: o tempo limite abortou o fetch. Compara pelo nome porque o
+ *     polyfill do RN cria o próprio DOMException, e o global pode nem existir.
+ *   - TypeError saído do fetch: "Network request failed" — Wi-Fi conectado
+ *     sem saída para a internet, que o `exigirInternet` não pega.
+ */
+function eFaltaDeRede(erro: unknown): boolean {
+  const nome = (erro as { name?: unknown } | null)?.name;
+  return nome === 'AbortError' || erro instanceof TypeError;
 }
 
 async function exigirInternet() {

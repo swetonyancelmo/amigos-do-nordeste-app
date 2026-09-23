@@ -258,6 +258,26 @@ export function Progresso({ passo, total }: { passo: number; total: number }) {
   );
 }
 
+/* ------------------------------------------------------------------ Barra */
+
+/**
+ * Barra contínua para "quanto já foi" (ex.: envio da fila). Diferente de
+ * `Progresso`, que mostra passos: a fila pode ter trinta cadastros, e trinta
+ * segmentos não cabem numa linha.
+ */
+export function Barra({ feitos, total, rotulo }: { feitos: number; total: number; rotulo: string }) {
+  const fracao = total > 0 ? Math.min(feitos / total, 1) : 0;
+  return (
+    <View
+      style={e.barra}
+      accessibilityRole="progressbar"
+      accessibilityLabel={rotulo}
+      accessibilityValue={{ min: 0, max: total, now: feitos, text: rotulo }}>
+      <View style={[e.barraCheia, { width: `${fracao * 100}%` }]} />
+    </View>
+  );
+}
+
 /* ------------------------------------------------------------------- Selo */
 
 export function Selo({ texto: t, tom }: { texto: string; tom: 'espera' | 'aceito' | 'devolvido' }) {
@@ -400,6 +420,9 @@ const e = StyleSheet.create({
   trilho: { flexDirection: 'row', gap: esp.xs },
   segmento: { flex: 1, height: 6, borderRadius: 3, backgroundColor: cores.linha },
   segmentoFeito: { backgroundColor: cores.laranja },
+
+  barra: { height: 12, borderRadius: 6, backgroundColor: cores.linha, overflow: 'hidden' },
+  barraCheia: { height: '100%', borderRadius: 6, backgroundColor: cores.laranja },
 
   selo: { alignSelf: 'flex-start', borderRadius: raio.sm, paddingHorizontal: 10, paddingVertical: 5 },
   seloTexto: { fontSize: 12, fontWeight: '700' },
