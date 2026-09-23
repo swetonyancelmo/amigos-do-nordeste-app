@@ -48,7 +48,11 @@ import {
 // eslint-disable-next-line import/first
 import { SemInternet } from '../sincronizar';
 
-/** Como o ComunidadeResponse do backend chega, com tudo que ele traz. */
+/**
+ * Uma comunidade como o servidor poderia mandar. A rota /opcoes já vem sem
+ * líder nem coordenadas; eles estão aqui para provar que, se vierem, o
+ * aparelho não guarda.
+ */
 function doServidor(id: string, nome: string, municipioNome: string) {
   return {
     id,
@@ -119,7 +123,7 @@ describe('paraLocal', () => {
 });
 
 describe('atualizarComunidades', () => {
-  test('baixa de GET /api/comunidades e guarda no aparelho', async () => {
+  test('baixa de GET /api/comunidades/opcoes e guarda no aparelho', async () => {
     mockApiGet.mockResolvedValue([
       doServidor('1', 'Sítio Igrejinha', 'Petrolândia'),
       doServidor('2', 'Baixio', 'Tacaratu'),
@@ -127,7 +131,7 @@ describe('atualizarComunidades', () => {
 
     await expect(atualizarComunidades()).resolves.toBe(2);
 
-    expect(mockApiGet).toHaveBeenCalledWith('/api/comunidades');
+    expect(mockApiGet).toHaveBeenCalledWith('/api/comunidades/opcoes');
     expect((await listarComunidades()).map(rotuloComunidade)).toEqual([
       'Baixio · Tacaratu',
       'Sítio Igrejinha · Petrolândia',

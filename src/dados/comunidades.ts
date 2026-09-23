@@ -5,14 +5,16 @@
  * "sítio igrejinha" e "Igrejinha" viram três comunidades e o relatório por
  * comunidade deixa de fechar.
  *
- * A lista vem de GET /api/comunidades, é baixada na ativação (que já exige
- * internet) e fica no SQLite — daí em diante o Passo 1 funciona offline. Um
- * botão no Passo 1 baixa de novo quando houver sinal.
+ * A lista vem de GET /api/comunidades/opcoes (a versão enxuta do CRUD de
+ * comunidades, a única leitura que o token do aparelho abre além do envio), é
+ * baixada na ativação (que já exige internet) e fica no SQLite — daí em
+ * diante o Passo 1 funciona offline. Um botão no Passo 1 baixa de novo
+ * quando houver sinal.
  *
  * Isto não fere o "só envia": comunidade não é dado de família, é a lista
- * fechada que o sistema web também usa. Da resposta, só entram no aparelho
- * id, nome e município — líder, telefone do líder e coordenadas ficam no
- * servidor.
+ * fechada que o sistema web também usa. Só entram no aparelho id, nome e
+ * município — o servidor já não manda líder, telefone nem coordenadas, e
+ * `paraLocal` descarta qualquer outro campo que vier.
  *
  * Quem não está na lista entra por "Outra comunidade", com o nome digitado —
  * vai com `comunidadeId` nulo e a associação acerta na aprovação.
@@ -36,13 +38,13 @@ export function rotuloComunidade(c: Pick<Comunidade, 'nome' | 'municipioNome'>):
 /* ------------------------------------------------- resposta do servidor */
 
 /**
- * Converte a resposta de GET /api/comunidades no que o aparelho guarda.
+ * Converte a resposta de GET /api/comunidades/opcoes no que o aparelho guarda.
  * Item sem id, nome ou município é descartado: sem município a agente não
  * tem como saber de qual "Igrejinha" se trata.
  */
 export function paraLocal(resposta: unknown): Comunidade[] {
   if (!Array.isArray(resposta)) {
-    throw new Error('Resposta de /api/comunidades não é uma lista.');
+    throw new Error('Resposta de /api/comunidades/opcoes não é uma lista.');
   }
   const lista: Comunidade[] = [];
   for (const item of resposta) {
@@ -134,7 +136,7 @@ export async function comunidadesAtualizadasEm(): Promise<string | null> {
  * comunidades ficaram guardadas.
  */
 export async function atualizarComunidades(): Promise<number> {
-  const lista = paraLocal(await apiGet<unknown>('/api/comunidades'));
+  const lista = paraLocal(await apiGet<unknown>('/api/comunidades/opcoes'));
   if (lista.length === 0) return (await listarComunidades()).length;
 
   const db = await abrirBanco();
