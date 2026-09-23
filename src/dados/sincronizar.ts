@@ -23,9 +23,31 @@ export type ResumoSincronizacao = {
   semInternet: boolean;
 };
 
-export async function sincronizar(
-  aoProgredir?: (feitos: number, total: number) => void,
-): Promise<ResumoSincronizacao> {
+type AoProgredir = (feitos: number, total: number) => void;
+
+let emAndamento: Promise<ResumoSincronizacao> | null = null;
+const ouvintes = new Set<AoProgredir>();
+
+/**
+ * Um envio por vez no aparelho inteiro. Dois toques rápidos em "Enviar agora"
+ * abrem duas telas de envio; sem isto, as duas leriam a mesma fila e
+ * mandariam o mesmo cadastro duas vezes. Quem chega com um envio já andando
+ * entra nele: acompanha o mesmo progresso e recebe o mesmo resumo.
+ */
+export function sincronizar(aoProgredir?: AoProgredir): Promise<ResumoSincronizacao> {
+  if (aoProgredir) ouvintes.add(aoProgredir);
+  if (!emAndamento) {
+    emAndamento = enviarFila((feitos, total) => ouvintes.forEach(o => o(feitos, total))).finally(
+      () => {
+        emAndamento = null;
+        ouvintes.clear();
+      },
+    );
+  }
+  return emAndamento;
+}
+
+async function enviarFila(aoProgredir: AoProgredir): Promise<ResumoSincronizacao> {
   const pendentes = await listarPendentes();
   const resumo: ResumoSincronizacao = {
     enviados: 0,
@@ -74,7 +96,7 @@ export async function sincronizar(
       resumo.comErro++;
     }
 
-    aoProgredir?.(++feitos, pendentes.length);
+    aoProgredir(++feitos, pendentes.length);
   }
 
   return resumo;
