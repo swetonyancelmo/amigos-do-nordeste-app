@@ -24,7 +24,16 @@ const BASE: string =
 
 const TEMPO_LIMITE = 20_000;
 
-export async function apiPost<T>(rota: string, corpo: unknown): Promise<T> {
+export function apiPost<T>(rota: string, corpo: unknown): Promise<T> {
+  return requisitar<T>('POST', rota, corpo);
+}
+
+/** Só para listas fechadas (ex.: comunidades) — nunca dado de família. */
+export function apiGet<T>(rota: string): Promise<T> {
+  return requisitar<T>('GET', rota);
+}
+
+async function requisitar<T>(metodo: 'GET' | 'POST', rota: string, corpo?: unknown): Promise<T> {
   await exigirInternet();
 
   const token = await lerTokenDoAparelho();
@@ -33,13 +42,13 @@ export async function apiPost<T>(rota: string, corpo: unknown): Promise<T> {
 
   try {
     const resposta = await fetch(BASE + rota, {
-      method: 'POST',
+      method: metodo,
       signal: controle.signal,
       headers: {
-        'Content-Type': 'application/json',
+        ...(corpo !== undefined ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify(corpo),
+      ...(corpo !== undefined ? { body: JSON.stringify(corpo) } : {}),
     });
 
     if (!resposta.ok) {
