@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Aviso, Botao, Campo } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import { apiPost } from '@/dados/api';
+import { atualizarComunidades } from '@/dados/comunidades';
 import { SemInternet } from '@/dados/sincronizar';
 import { useSessao } from '@/sessao/sessao';
 
@@ -24,6 +25,11 @@ export default function Ativar() {
     try {
       const r = await apiPost<RespostaAtivacao>('/api/agentes/ativar', { codigo: limpo });
       await ativar(r.token, r.nomeAgente);
+      // Aproveita a internet desta primeira vez para trazer a lista de
+      // comunidades — daí em diante o Passo 1 funciona offline. Se falhar, a
+      // ativação vale do mesmo jeito: o Passo 1 tem o botão de atualizar e
+      // o "Outra comunidade".
+      await atualizarComunidades().catch(() => undefined);
       router.replace('/pin?criar=1');
     } catch (e) {
       setErro(

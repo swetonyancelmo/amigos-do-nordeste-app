@@ -63,6 +63,27 @@ const PASSOS: Array<(db: SQLite.SQLiteDatabase) => Promise<void>> = [
       CREATE INDEX idx_pre_situacao ON pre_cadastro (situacao);
     `);
   },
+
+  // 2 — lista fechada de comunidades, baixada na ativação (issue #8).
+  // Não é dado de família: é a mesma lista que o sistema web usa. Só guarda
+  // o que a tela mostra — o resto da resposta (líder, telefone, coordenadas)
+  // não entra no aparelho.
+  async db => {
+    await db.execAsync(`
+      CREATE TABLE comunidade (
+        id              TEXT PRIMARY KEY,       -- uuid do servidor
+        nome            TEXT NOT NULL,
+        municipio_id    TEXT,
+        municipio_nome  TEXT NOT NULL
+      );
+
+      -- quando cada lista baixada do servidor foi atualizada pela última vez
+      CREATE TABLE lista_atualizada (
+        lista  TEXT PRIMARY KEY,
+        em     TEXT NOT NULL
+      );
+    `);
+  },
 ];
 
 async function migrar(db: SQLite.SQLiteDatabase) {
@@ -80,5 +101,7 @@ async function migrar(db: SQLite.SQLiteDatabase) {
 /** Só para os testes: apaga tudo e recria. Nunca chamar em produção. */
 export async function _limparParaTeste() {
   const db = await abrirBanco();
-  await db.execAsync('DELETE FROM pessoa; DELETE FROM pre_cadastro;');
+  await db.execAsync(
+    'DELETE FROM pessoa; DELETE FROM pre_cadastro; DELETE FROM comunidade; DELETE FROM lista_atualizada;',
+  );
 }

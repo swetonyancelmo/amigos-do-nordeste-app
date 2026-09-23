@@ -79,7 +79,7 @@ src/
   dados/tipos.ts           PreCadastro, Pessoa, Situacao — tipos compartilhados
   dados/fila.ts            toda leitura/escrita da fila de saída
   dados/gravador.ts        debouncer de escrita sem duas gravações se cruzando
-  dados/comunidades.ts     lista provisória de comunidades (issue #8 troca por API)
+  dados/comunidades.ts     lista de comunidades (GET /api/comunidades → SQLite, offline)
   dados/api.ts             cliente HTTP (fetch com timeout, Authorization)
   dados/sincronizar.ts     envio item a item com idempotência
   sessao/sessao.tsx        contexto de ativação/PIN (SecureStore)
