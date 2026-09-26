@@ -40,8 +40,9 @@ Aponte para a API local editando `extra.apiUrl` no `app.json`.
 ## Gerar o APK
 
 ```bash
-npx eas login
-npx eas build -p android --profile apk
+npm install -g eas-cli
+eas login
+eas build -p android --profile apk
 ```
 
 O perfil `apk` do `eas.json` já força `buildType: apk` — sem isso o EAS gera um

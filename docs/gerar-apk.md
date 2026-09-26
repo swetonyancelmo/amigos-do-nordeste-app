@@ -19,15 +19,19 @@ a agente está em [`instalacao/instalar-no-celular.md`](instalacao/instalar-no-c
 ## Gerar
 
 ```bash
-npx eas login                               # conta Expo da associação
-npx eas build -p android --profile apk
+npm install -g eas-cli      # o pacote é eas-cli: `npx eas` não resolve
+eas login
+eas build -p android --profile apk
 ```
 
-Na primeira vez o `eas build` pergunta duas coisas:
+O projeto no EAS já existe (`@swetonyancelmo/cadastro-familias-app`, id em
+`extra.eas.projectId` no `app.json`) e a keystore já foi gerada lá. Faça login
+numa conta com acesso a esse projeto; o `eas build` não deve perguntar mais
+nada. Se perguntar se deve **gerar uma keystore nova**, pare: é conta errada.
 
-1. **Criar o projeto no EAS** → sim. Ele grava `extra.eas.projectId` no
-   `app.json`. Faça commit dessa mudança.
-2. **Gerar uma keystore Android** → sim, deixe o EAS gerar e guardar.
+Se o comando cair com `request to https://api.expo.dev/graphql failed,
+reason:` (sem motivo), é instabilidade de rede, não problema do projeto. Rode
+de novo.
 
 O perfil `apk` do `eas.json` força `buildType: apk`. Sem ele o EAS gera um
 `.aab`, que só serve para a Play Store e **não instala direto no celular**.
@@ -48,13 +52,28 @@ enviados. É exatamente o tipo de perda que o app existe para evitar.
 
 Por isso:
 
-- A keystore fica no EAS, na conta da associação. Não gere uma nova com
-  `eas credentials` nem troque de conta Expo entre uma versão e outra.
-- Guarde um backup fora do EAS: `npx eas credentials -p android` →
+- A keystore fica no EAS, no projeto acima. Não gere uma nova com
+  `eas credentials` nem crie outro projeto EAS entre uma versão e outra.
+- Guarde um backup fora do EAS: `eas credentials -p android` →
   *Download credentials*. Guarde o `.jks` e as senhas num cofre de senhas da
   associação, **nunca no repositório**.
 - Antes de pedir para a agente atualizar, confira no app que a fila está vazia
   (tudo enviado). Se algo der errado, não se perde nada.
+
+## Se o build falhar em "Install dependencies"
+
+O servidor do EAS roda `npm ci`, que é mais rígido que o `npm install` local:
+um `package-lock.json` com conflito de versões passa no seu computador (o
+`node_modules` já existe) e quebra lá. Reproduza antes de gerar:
+
+```bash
+npm ci --dry-run
+```
+
+Foi o que aconteceu no primeiro build: instalar o `expo-updates` trouxe um
+`react-dom` mais novo que o `react` do projeto. Por isso o `react-dom` está
+fixado no `package.json` com a mesma versão do `react` — ao subir um, suba o
+outro junto.
 
 ## Entregar
 
