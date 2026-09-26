@@ -21,6 +21,17 @@ export const cores = {
   laranjaSuave: '#FCEBE3',
   verdeSuave: '#E4F1E7',
   ambarSuave: '#FEF3E0',
+
+  /**
+   * Versões escuras para escrever texto EM CIMA da cor "Suave" correspondente
+   * (Selo, título de Aviso, título de Destaque). A cor "cheia" (laranja,
+   * verde, ambar) não passa de 3.6:1 contra a própria versão Suave — falha o
+   * mínimo de 4.5:1 de texto (WCAG AA), o que é inaceitável com o app sendo
+   * lido ao sol. Essas três têm 5.9:1 ou mais.
+   */
+  laranjaEscrita: '#A62F0C',
+  verdeEscrita: '#0A5E22',
+  ambarEscrita: '#7A4E00',
 } as const;
 
 /** Escala de espaçamento. Múltiplos de 4. */

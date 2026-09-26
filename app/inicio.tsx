@@ -53,21 +53,27 @@ export default function Inicio() {
 
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel="Cadastrar uma família"
         onPress={() => router.push('/cadastro/familia')}
         style={({ pressed }) => [e.principal, pressed && { opacity: 0.9 }]}>
-        <Text style={e.mais}>+</Text>
+        <Text style={e.mais} maxFontSizeMultiplier={1.2} importantForAccessibility="no">
+          +
+        </Text>
         <Text style={e.principalTexto}>Cadastrar uma família</Text>
       </Pressable>
 
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel="Meus cadastros, ver o que já foi enviado"
         onPress={() => router.push('/enviados')}
         style={e.atalho}>
         <View style={{ flex: 1 }}>
           <Text style={e.atalhoTitulo}>Meus cadastros</Text>
           <Text style={e.miudo}>Ver o que já foi enviado</Text>
         </View>
-        <Text style={e.seta}>›</Text>
+        <Text style={e.seta} maxFontSizeMultiplier={1.2} importantForAccessibility="no">
+          ›
+        </Text>
       </Pressable>
     </View>
   );

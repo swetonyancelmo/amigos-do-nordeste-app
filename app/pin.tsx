@@ -81,7 +81,9 @@ export default function Pin() {
       <View style={e.bolinhas}>
         {[0, 1, 2, 3].map(i => (
           <View key={i} style={[e.bolinha, i < digitos.length && e.bolinhaCheia]}>
-            <Text style={e.ponto}>{i < digitos.length ? '•' : ''}</Text>
+            <Text style={e.ponto} maxFontSizeMultiplier={1.2}>
+              {i < digitos.length ? '•' : ''}
+            </Text>
           </View>
         ))}
       </View>
@@ -103,7 +105,9 @@ export default function Pin() {
                   accessibilityLabel={k === '<' ? 'Apagar' : k}
                   onPress={() => tocar(k)}
                   style={({ pressed }) => [e.tecla, e.teclaAtiva, pressed && { opacity: 0.7 }]}>
-                  <Text style={k === '<' ? e.teclaApagar : e.teclaTexto}>
+                  <Text
+                    style={k === '<' ? e.teclaApagar : e.teclaTexto}
+                    maxFontSizeMultiplier={1.3}>
                     {k === '<' ? 'apagar' : k}
                   </Text>
                 </Pressable>
