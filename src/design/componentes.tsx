@@ -46,6 +46,7 @@ export function Botao({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={titulo}
       accessibilityState={{ disabled: inativo, busy: carregando }}
       onPress={aoTocar}
       disabled={inativo}
@@ -113,11 +114,16 @@ export function Marcar({
   return (
     <Pressable
       accessibilityRole="checkbox"
+      accessibilityLabel={titulo}
       accessibilityState={{ checked: marcado }}
       onPress={() => aoMudar(!marcado)}
       style={({ pressed }) => [e.opcao, marcado && e.opcaoMarcada, pressed && { opacity: 0.85 }]}>
       <View style={[e.caixa, marcado && e.caixaCheia]}>
-        {marcado ? <Text style={e.caixaVisto}>✓</Text> : null}
+        {marcado ? (
+          <Text style={e.caixaVisto} maxFontSizeMultiplier={1.2}>
+            ✓
+          </Text>
+        ) : null}
       </View>
       <Text style={e.opcaoTexto}>{titulo}</Text>
     </Pressable>
@@ -175,6 +181,7 @@ export function ItemLista({
       {aoTocar ? (
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel={detalhe ? `${titulo}, ${detalhe}` : titulo}
           onPress={aoTocar}
           style={({ pressed }) => [e.itemCorpo, pressed && { opacity: 0.85 }]}>
           {corpo}
@@ -222,6 +229,7 @@ export function Opcoes<T extends string>({
           <Pressable
             key={o.valor}
             accessibilityRole="radio"
+            accessibilityLabel={o.titulo}
             accessibilityState={{ checked: marcado }}
             onPress={() => aoEscolher(o.valor)}
             style={({ pressed }) => [
@@ -282,9 +290,9 @@ export function Barra({ feitos, total, rotulo }: { feitos: number; total: number
 
 export function Selo({ texto: t, tom }: { texto: string; tom: 'espera' | 'aceito' | 'devolvido' }) {
   const paleta = {
-    espera: { fundo: cores.ambarSuave, cor: cores.ambar },
-    aceito: { fundo: cores.verdeSuave, cor: cores.verde },
-    devolvido: { fundo: cores.laranjaSuave, cor: cores.laranja },
+    espera: { fundo: cores.ambarSuave, cor: cores.ambarEscrita },
+    aceito: { fundo: cores.verdeSuave, cor: cores.verdeEscrita },
+    devolvido: { fundo: cores.laranjaSuave, cor: cores.laranjaEscrita },
   }[tom];
 
   return (
@@ -306,9 +314,9 @@ export function Aviso({
   tom?: 'calmo' | 'atencao' | 'erro';
 }) {
   const paleta = {
-    calmo: { fundo: cores.verdeSuave, cor: cores.verde },
-    atencao: { fundo: cores.ambarSuave, cor: cores.ambar },
-    erro: { fundo: cores.laranjaSuave, cor: cores.laranja },
+    calmo: { fundo: cores.verdeSuave, cor: cores.verdeEscrita },
+    atencao: { fundo: cores.ambarSuave, cor: cores.ambarEscrita },
+    erro: { fundo: cores.laranjaSuave, cor: cores.laranjaEscrita },
   }[tom];
 
   return (
@@ -393,7 +401,7 @@ const e = StyleSheet.create({
     padding: esp.md,
     gap: esp.md,
   },
-  destaqueTitulo: { ...texto.corpoForte, color: cores.laranja },
+  destaqueTitulo: { ...texto.corpoForte, color: cores.laranjaEscrita },
 
   opcao: {
     minHeight: ALVO_MINIMO,
