@@ -10,11 +10,28 @@
     "android": {
       "package": "br.org.amigosdonordeste.cadastro",
       "versionCode": 1,
-      "adaptiveIcon": { "backgroundColor": "#E54314" }
+      "adaptiveIcon": {
+        "backgroundColor": "#E54314"
+      }
     },
-    "plugins": ["expo-router", "expo-sqlite", "expo-secure-store"],
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-secure-store"
+    ],
     "extra": {
-      "apiUrl": "https://cadastro-familias-api.exemplo.com.br"
-    }
+      "apiUrl": "https://cadastro-familias-api.exemplo.com.br",
+      "router": {},
+      "eas": {
+        "projectId": "faa4396a-1860-408f-a254-ec8caec0873c"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/faa4396a-1860-408f-a254-ec8caec0873c"
+    },
+    "ios": {}
   }
 }
