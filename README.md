@@ -40,16 +40,18 @@ Aponte para a API local editando `extra.apiUrl` no `app.json`.
 ## Gerar o APK
 
 ```bash
-npx eas login
-npx eas build -p android --profile apk
+npm install -g eas-cli
+eas login
+eas build -p android --profile apk
 ```
 
 O perfil `apk` do `eas.json` já força `buildType: apk` — sem isso o EAS gera um
 `.aab`, que **não instala direto no celular**. O plano gratuito do EAS tem fila,
 então gere com antecedência no dia da entrega.
 
-Para instalar, a agente precisa autorizar "instalar de fontes desconhecidas" no
-Android. Vale um passo a passo com prints junto com o link do arquivo.
+Antes de gerar, veja o checklist em `docs/gerar-apk.md` (URL da API,
+`versionCode`, keystore). O passo a passo que vai para a agente, com prints,
+está em `docs/instalacao/instalar-no-celular.md`.
 
 ---
 
