@@ -19,16 +19,25 @@ quase toda decisão não óbvia do projeto.
 npm install
 npx expo start        # roda no Expo Go
 npm run android        # expo run:android
-npm run lint           # expo lint
-npm test               # jest (alias "teste" no package.json)
+npm run lint           # expo lint; no-console é erro (privacidade)
+npx jest               # ou `npm run teste`: NÃO existe script "test", então `npm test` falha
 npm run apk            # eas build -p android --profile apk
 ```
 
 Rodar um único teste: `npx jest src/dados/__tests__/gravador.test.ts`.
 
-Para apontar para uma API local, edite `extra.apiUrl` em `app.json`. O perfil
-`apk` do `eas.json` força `buildType: apk` — sem isso o EAS gera `.aab`, que
-não instala direto no celular.
+Os testes rodam em Node com `jest-expo`. Para o SQLite, use
+`jest.mock('expo-sqlite', () => jest.requireActual('../../testes/sqliteEmNode'))`:
+`src/testes/sqliteEmNode.ts` implementa a parte do `expo-sqlite` que o app usa
+sobre `node:sqlite`, gravando em arquivo para simular fechar e reabrir o app.
+Nunca importe esse módulo fora de teste.
+
+Para apontar para uma API local, edite `extra.apiUrl` em `app.json` (hoje é um
+placeholder, `cadastro-familias-api.exemplo.com.br`). Em `__DEV__`, a tela
+`ativar` tem o botão "Entrar sem código (dev)", que pula a API com um token
+falso. O perfil `apk` do `eas.json` força `buildType: apk`; sem isso o EAS gera
+`.aab`, que não instala direto no celular. Antes de gerar, siga
+`docs/gerar-apk.md` (URL `https://` real, subir `versionCode`, conta EAS certa).
 
 ## As quatro decisões que moldam tudo
 
@@ -69,12 +78,19 @@ não instala direto no celular.
 app/                      rotas (expo-router, arquivo = rota)
   _layout.tsx             Stack raiz + ProvedorSessao
   index.tsx               decide para onde ir conforme EstadoSessao
-  ativar.tsx / pin.tsx     ativação por convite e trava por PIN
-  inicio.tsx               contador da fila
-  cadastro/familia.tsx     Passo 1 do fluxo de cadastro
+  ativar.tsx / pin.tsx     ativação por convite (POST /api/agentes/ativar) e trava por PIN
+  inicio.tsx               contador da fila e atalhos
+  cadastro/familia.tsx     Passo 1: responsável, contato, comunidade, ponto de referência
+  cadastro/pessoas.tsx     Passo 2: quem mora na casa (lista, abre, remove)
+  cadastro/pessoa.tsx      formulário de uma pessoa (adicionar/editar)
+  cadastro/revisar.tsx     Passo 3: conferir e salvar (vira PRONTO)
+  cadastro/devolvido.tsx   motivo da devolução e "corrigir e reenviar"
+  enviados.tsx             "Meus cadastros": tudo no aparelho, com selo de situação
+  enviando.tsx             progresso do envio da fila
+  sem-internet.tsx         envio sem rede: tranquiliza e mostra o que ficou guardado
 src/
   design/tokens.ts         cores, espaçamento, tipografia, ALVO_MINIMO
-  design/componentes.tsx   Botao, Campo, Opcoes, Progresso, Selo, Aviso
+  design/componentes.tsx   Botao, Campo, Marcar, Destaque, ItemLista, Opcoes, Progresso, Barra, Selo, Aviso
   dados/banco.ts           SQLite + migrações versionadas (PRAGMA user_version)
   dados/tipos.ts           PreCadastro, Pessoa, Situacao — tipos compartilhados
   dados/fila.ts            toda leitura/escrita da fila de saída
@@ -82,8 +98,19 @@ src/
   dados/comunidades.ts     lista de comunidades (GET /api/comunidades/opcoes → SQLite, offline)
   dados/api.ts             cliente HTTP (fetch com timeout, Authorization)
   dados/sincronizar.ts     envio item a item com idempotência
+  dados/formPessoa.ts      regras do formulário de pessoa (idade estimada datada, nome opcional)
+  dados/idade.ts           idade e totais calculados na hora, datas como AAAA-MM-DD sem Date
+  dados/revisao.ts         o que impede salvar (só: sem responsável ou sem ninguém na casa)
+  dados/envio.ts           textos das telas de envio (nunca repassa erro cru)
+  dados/meusCadastros.ts   selo e ordenação da lista de enviados
+  dados/devolvido.ts       motivo da devolução e se dá para corrigir
   sessao/sessao.tsx        contexto de ativação/PIN (SecureStore)
+  testes/sqliteEmNode.ts   expo-sqlite falso sobre node:sqlite, só para testes
 ```
+
+Padrão do projeto: **a regra de cada tela fica em `src/dados/*.ts`, sem
+React, e é testada em `src/dados/__tests__/`**. A tela só compõe componentes e
+chama essas funções. Ao criar uma tela com lógica, siga o mesmo corte.
 
 Alias de import: `@/*` aponta para `src/*` (configurado em `tsconfig.json`).
 
@@ -124,14 +151,29 @@ quando o APK atualiza. Versão atual controlada via `PRAGMA user_version`.
 em pé, no sol, com uma mão, e pode ser interrompida a qualquer momento: alvo
 de toque nunca abaixo de `ALVO_MINIMO` (56px), corpo de texto nunca abaixo de
 16. Toda tela nova deve compor os componentes existentes (`Botao`, `Campo`,
-`Opcoes`, `Progresso`, `Selo`, `Aviso`) em vez de estilo solto — se faltar uma
+`Marcar`, `Destaque`, `ItemLista`, `Opcoes`, `Progresso`, `Barra`, `Selo`,
+`Aviso`) em vez de estilo solto — se faltar uma
 variante, acrescente-a em `componentes.tsx`.
 
 ## Estado do projeto
 
-Só a "casca" está pronta: infraestrutura de dados, design system, sessão e
-tela inicial. **Faltam as telas do fluxo de cadastro** além do Passo 1
-(`app/cadastro/pessoas.tsx` etc.), a lista de enviados (`app/enviados.tsx`) e
-a tela de cadastro devolvido — são issues para o time construir.
+O fluxo completo existe: ativação, PIN, cadastro em três passos, fila, envio
+(com telas de progresso e sem internet), lista de enviados e tela de devolvido.
+Há testes para toda a camada `src/dados/`, inclusive
+`perdaDeDados.test.ts` ("os quatro jeitos de perder dado"). O `console.*` é
+proibido no lint.
+
+**Lacuna com a API:** o app só envia; não existe rota para o aparelho saber se
+um pré-cadastro foi aprovado ou devolvido. As situações locais `ACEITO` e
+`DEVOLVIDO` (e a tela `cadastro/devolvido`) ainda não têm de onde vir. Hoje o
+envio bem-sucedido deixa o registro em `ENVIADO`. Cuidado com o nome: no
+`POST /api/pre-cadastros`, a resposta `ACEITO` significa "recebido pelo
+servidor", não "aprovado pela associação". Uma rota de consulta nova precisa
+respeitar a ADR-0002 da API: devolver só a situação e o motivo dos
+pré-cadastros **daquela agente**, nunca dado de família.
+
+Distribuição: projeto EAS `@swetonyancelmo/cadastro-familias-app`, com
+keystore já gerada e `expo-updates` configurado. O guia de instalação para a
+agente está em `docs/instalacao/instalar-no-celular.md`.
 
 Protótipo: [Figma do app](https://www.figma.com/design/SA3REA1kBhYYeiJf6dxH1J)

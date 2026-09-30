@@ -9,22 +9,25 @@ React Native com Expo · SQLite local · distribuição por APK.
 
 ## O que este repositório contém hoje
 
-Só a **casca**: o que já estava resolvido e travaria todo mundo se ficasse para
-depois. As telas do fluxo de cadastro são issues, para o time construir.
-
-| Já pronto | Onde |
+| Pronto | Onde |
 |---|---|
-| Projeto Expo configurado, com build de APK | `app.json`, `eas.json` |
-| Tokens de design e os 4 componentes de campo | `src/design/` |
+| Projeto Expo configurado, com build de APK e `expo-updates` | `app.json`, `eas.json` |
+| Tokens de design e componentes | `src/design/` |
 | Banco local SQLite com migrações versionadas | `src/dados/banco.ts` |
-| Fila de saída — salvar, listar, marcar situação | `src/dados/fila.ts` |
-| Envio com idempotência | `src/dados/sincronizar.ts` |
+| Fila de saída: salvar, listar, marcar situação | `src/dados/fila.ts` |
+| Lista de comunidades guardada offline | `src/dados/comunidades.ts` |
+| Envio item a item com idempotência | `src/dados/sincronizar.ts`, `app/enviando.tsx`, `app/sem-internet.tsx` |
 | Cliente HTTP com token do aparelho | `src/dados/api.ts` |
 | Ativação por código de convite e trava por PIN | `src/sessao/`, `app/ativar.tsx`, `app/pin.tsx` |
 | Tela inicial com o contador da fila | `app/inicio.tsx` |
+| Cadastro em três passos: família, pessoas, revisar | `app/cadastro/` |
+| Meus cadastros e cadastro devolvido | `app/enviados.tsx`, `app/cadastro/devolvido.tsx` |
+| Testes da camada de dados | `src/dados/__tests__/` |
 
-**Falta construir:** as telas do cadastro (`app/cadastro/*`), a lista de
-enviados (`app/enviados.tsx`) e a tela de cadastro devolvido. Estão nas issues.
+**Falta:** a API ainda não tem rota para o aparelho saber se um pré-cadastro
+foi aprovado ou devolvido. Por isso as situações `ACEITO` e `DEVOLVIDO` ainda
+não chegam ao celular. Depois de enviado, o cadastro fica em "esperando
+aprovação".
 
 ---
 
@@ -33,9 +36,13 @@ enviados (`app/enviados.tsx`) e a tela de cadastro devolvido. Estão nas issues.
 ```bash
 npm install
 npx expo start          # abre no Expo Go, lendo o QR code
+npm run lint
+npx jest                # ou `npm run teste` (não existe script "test")
 ```
 
-Aponte para a API local editando `extra.apiUrl` no `app.json`.
+Aponte para a API local editando `extra.apiUrl` no `app.json`. Em
+desenvolvimento, a tela de ativação tem um botão "Entrar sem código (dev)"
+para ver o fluxo sem API.
 
 ## Gerar o APK
 
@@ -111,15 +118,28 @@ app/                      rotas (expo-router)
   ativar.tsx              código de convite
   pin.tsx                 criar e digitar o PIN
   inicio.tsx              contador da fila e atalhos
+  cadastro/familia.tsx    passo 1: responsável, contato, comunidade
+  cadastro/pessoas.tsx    passo 2: quem mora na casa
+  cadastro/pessoa.tsx     formulário de uma pessoa
+  cadastro/revisar.tsx    passo 3: conferir e salvar
+  cadastro/devolvido.tsx  motivo da devolução e reenvio
+  enviados.tsx            meus cadastros
+  enviando.tsx            progresso do envio
+  sem-internet.tsx        envio sem rede
 src/
   design/tokens.ts        cores, espaçamento, escala de texto, alvo mínimo
-  design/componentes.tsx  Botao, Campo, Selo, Aviso
+  design/componentes.tsx  Botao, Campo, Opcoes, Progresso, Selo, Aviso…
   dados/banco.ts          SQLite e migrações
   dados/fila.ts           escrita e leitura da fila de saída
+  dados/gravador.ts       gravação do rascunho sem escritas fora de ordem
+  dados/comunidades.ts    lista de comunidades offline
   dados/sincronizar.ts    envio com idempotência
   dados/api.ts            cliente HTTP
   dados/tipos.ts          tipos compartilhados
+  dados/*.ts              regras de cada tela, testáveis sem React
+  dados/__tests__/        testes (jest)
   sessao/sessao.tsx       ativação e trava por PIN
+  testes/sqliteEmNode.ts  SQLite falso para os testes
 ```
 
 Protótipo: [Figma do app](https://www.figma.com/design/SA3REA1kBhYYeiJf6dxH1J)
