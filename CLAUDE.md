@@ -32,10 +32,11 @@ Os testes rodam em Node com `jest-expo`. Para o SQLite, use
 sobre `node:sqlite`, gravando em arquivo para simular fechar e reabrir o app.
 Nunca importe esse módulo fora de teste.
 
-Para apontar para uma API local, edite `extra.apiUrl` em `app.json` (hoje é um
-placeholder, `cadastro-familias-api.exemplo.com.br`). Em `__DEV__`, a tela
-`ativar` tem o botão "Entrar sem código (dev)", que pula a API com um token
-falso. O perfil `apk` do `eas.json` força `buildType: apk`; sem isso o EAS gera
+Para apontar para uma API local, copie `.env.example` para `.env` e defina
+`EXPO_PUBLIC_API_URL` com o IP da máquina na rede (`app.config.js` lê a
+variável; sem ela vale `extra.apiUrl` do `app.json`, hoje um placeholder,
+`cadastro-familias-api.exemplo.com.br`). Nunca commite IP local no `app.json`.
+`http://` só funciona no Expo Go; o APK de release exige `https://`. O perfil `apk` do `eas.json` força `buildType: apk`; sem isso o EAS gera
 `.aab`, que não instala direto no celular. Antes de gerar, siga
 `docs/gerar-apk.md` (URL `https://` real, subir `versionCode`, conta EAS certa).
 
