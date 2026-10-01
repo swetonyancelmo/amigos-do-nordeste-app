@@ -82,8 +82,8 @@ function familia(id: string) {
     comunidadeNome: 'Sítio Açude Velho',
     pontoReferencia: 'Depois da igreja, casa azul à esquerda',
     pessoas: [
-      pessoa({ id: `${id}-p1`, ordem: 0, nome: 'Maria José da Conceição', sexo: 'F', dataNascimento: '1988-03-15' }),
-      pessoa({ id: `${id}-p2`, ordem: 1, sexo: 'M', idadeEstimada: 4, idadeEstimadaEm: '2026-09-01' }),
+      pessoa({ id: `${id}-p1`, ordem: 0, nome: 'Maria José da Conceição', sexo: 'FEMININO', dataNascimento: '1988-03-15' }),
+      pessoa({ id: `${id}-p2`, ordem: 1, sexo: 'MASCULINO', idadeEstimada: 4, idadeEstimadaEm: '2026-09-01' }),
       pessoa({ id: `${id}-p3`, ordem: 2, nome: null, cadastroIncompleto: true }),
     ],
   };

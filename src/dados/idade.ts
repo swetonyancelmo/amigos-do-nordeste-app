@@ -78,7 +78,7 @@ export function descreverTotal(t: TotalDaCasa): string {
 /** "Feminino · uns 7 anos" */
 export function descreverPessoa(p: Pessoa, hoje: string): string {
   const partes: string[] = [];
-  if (p.sexo) partes.push(p.sexo === 'F' ? 'Feminino' : 'Masculino');
+  if (p.sexo) partes.push(p.sexo === 'FEMININO' ? 'Feminino' : 'Masculino');
 
   const idade = idadeEm(p, hoje);
   if (idade === null) {

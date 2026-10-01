@@ -7,7 +7,7 @@ function pessoa(p: Partial<Pessoa>): Pessoa {
     id: 'p',
     nome: 'Ana',
     cadastroIncompleto: false,
-    sexo: 'F',
+    sexo: 'FEMININO',
     dataNascimento: '1990-01-01',
     idadeEstimada: null,
     idadeEstimadaEm: null,

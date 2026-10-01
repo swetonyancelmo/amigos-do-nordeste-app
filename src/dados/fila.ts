@@ -7,7 +7,7 @@
  */
 import * as Crypto from 'expo-crypto';
 import { abrirBanco } from './banco';
-import type { PreCadastro, Pessoa, Situacao } from './tipos';
+import type { PreCadastro, Pessoa, Sexo, Situacao } from './tipos';
 
 export function novoId(): string {
   return Crypto.randomUUID();
@@ -160,7 +160,7 @@ type LinhaPessoa = {
   pre_cadastro_id: string;
   nome: string | null;
   cadastro_incompleto: number;
-  sexo: 'F' | 'M' | null;
+  sexo: Sexo | null;
   data_nascimento: string | null;
   idade_estimada: number | null;
   idade_estimada_em: string | null;

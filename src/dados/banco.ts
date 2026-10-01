@@ -84,6 +84,16 @@ const PASSOS: Array<(db: SQLite.SQLiteDatabase) => Promise<void>> = [
       );
     `);
   },
+
+  // 3 — sexo passa a usar o mesmo valor do enum da API. O 'F'/'M' gravado
+  // pelos APKs anteriores fazia o servidor recusar o envio; converte o que já
+  // está no aparelho, inclusive o que ainda espera na fila.
+  async db => {
+    await db.execAsync(`
+      UPDATE pessoa SET sexo = 'FEMININO'  WHERE sexo = 'F';
+      UPDATE pessoa SET sexo = 'MASCULINO' WHERE sexo = 'M';
+    `);
+  },
 ];
 
 async function migrar(db: SQLite.SQLiteDatabase) {

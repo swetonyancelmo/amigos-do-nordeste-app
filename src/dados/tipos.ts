@@ -1,6 +1,7 @@
 export type Situacao = 'RASCUNHO' | 'PRONTO' | 'ENVIADO' | 'ACEITO' | 'DEVOLVIDO';
 
-export type Sexo = 'F' | 'M';
+/** Mesmo valor do enum Sexo da API (GET /api/metadados). */
+export type Sexo = 'FEMININO' | 'MASCULINO';
 
 export type Pessoa = {
   id: string;

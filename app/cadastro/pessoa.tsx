@@ -38,8 +38,8 @@ import type { Pessoa, Sexo } from '@/dados/tipos';
  */
 
 const OPCOES_SEXO: readonly { valor: Sexo; titulo: string }[] = [
-  { valor: 'F', titulo: 'Feminino' },
-  { valor: 'M', titulo: 'Masculino' },
+  { valor: 'FEMININO', titulo: 'Feminino' },
+  { valor: 'MASCULINO', titulo: 'Masculino' },
 ];
 
 type Gravacao = { id: string; pessoaId: string; dados: DadosPessoa };

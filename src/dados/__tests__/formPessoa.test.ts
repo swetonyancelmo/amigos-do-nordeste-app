@@ -47,7 +47,7 @@ describe('nome', () => {
   });
 
   test('nome em branco nunca trava: salva e marca incompleta mesmo sem a caixa', () => {
-    const d = dados(validarPessoa(form({ sexo: 'F' }), HOJE));
+    const d = dados(validarPessoa(form({ sexo: 'FEMININO' }), HOJE));
     expect(d.nome).toBeNull();
     expect(d.cadastroIncompleto).toBe(true);
   });
@@ -163,10 +163,10 @@ test('29 de fevereiro só em ano bissexto', () => {
 });
 
 test('paraForm devolve o que foi gravado', () => {
-  expect(paraForm(pessoa({ nome: 'Ana', sexo: 'F', dataNascimento: '2019-03-12' }), HOJE)).toEqual({
+  expect(paraForm(pessoa({ nome: 'Ana', sexo: 'FEMININO', dataNascimento: '2019-03-12' }), HOJE)).toEqual({
     nome: 'Ana',
     naoSeiNome: false,
-    sexo: 'F',
+    sexo: 'FEMININO',
     dataNascimento: '12/03/2019',
     idadeAproximada: '',
   });
