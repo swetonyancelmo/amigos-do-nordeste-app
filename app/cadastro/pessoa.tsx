@@ -18,6 +18,7 @@ import {
 } from '@/dados/formPessoa';
 import { criarGravador } from '@/dados/gravador';
 import { anosCompletos, hojeLocal } from '@/dados/idade';
+import { LIMITES } from '@/dados/limites';
 import type { Pessoa, Sexo } from '@/dados/tipos';
 
 /**
@@ -218,6 +219,7 @@ export default function PessoaDaCasa() {
         }
         value={form.nome}
         onChangeText={t => mudar({ nome: t })}
+        maxLength={LIMITES.nomePessoa}
         autoCapitalize="words"
       />
 
