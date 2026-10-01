@@ -73,7 +73,7 @@ Siga o padrão de `app/cadastro/familia.tsx`:
 - O app nunca baixa dado de família. A única lista que vem do servidor é a de
   comunidades (`comunidades.ts`).
 - Opções que o servidor valida (sexo etc.) precisam usar o mesmo valor do enum
-  da API. Hoje o app envia `'F'`/`'M'` e a API espera `FEMININO`/`MASCULINO`
+  da API (`FEMININO`, não `F`). Valor diferente faz a API recusar o envio
   (veja a skill `mudanca-de-contrato` na pasta que agrupa os repositórios).
 - Nenhum `console.*`: o lint trata como erro, para não vazar dado em log.
 
