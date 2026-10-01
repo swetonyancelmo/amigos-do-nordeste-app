@@ -37,6 +37,11 @@ type Contexto = {
   definirPin: (pin: string) => Promise<void>;
   destrancar: (pin: string) => Promise<boolean>;
   trancar: () => void;
+  /**
+   * Esquece o token (o servidor não o aceita mais) para ativar com um código
+   * novo. A fila de cadastros NÃO é tocada: está no SQLite, não aqui.
+   */
+  desativar: () => Promise<void>;
 };
 
 const Ctx = createContext<Contexto | null>(null);
@@ -80,8 +85,16 @@ export function ProvedorSessao({ children }: { children: React.ReactNode }) {
 
   const trancar = useCallback(() => setEstado('TRANCADO'), []);
 
+  const desativar = useCallback(async () => {
+    await SecureStore.deleteItemAsync(CHAVE_TOKEN);
+    await SecureStore.deleteItemAsync(CHAVE_AGENTE);
+    await SecureStore.deleteItemAsync(CHAVE_PIN);
+    setNome(null);
+    setEstado('SEM_ATIVACAO');
+  }, []);
+
   return (
-    <Ctx.Provider value={{ estado, nomeAgente, ativar, definirPin, destrancar, trancar }}>
+    <Ctx.Provider value={{ estado, nomeAgente, ativar, definirPin, destrancar, trancar, desativar }}>
       {children}
     </Ctx.Provider>
   );

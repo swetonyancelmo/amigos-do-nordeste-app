@@ -17,8 +17,10 @@ type Estado =
  * pelo callback `aoProgredir`.
  *
  * O envio começa ao abrir a tela. Sem internet (antes ou no meio), troca para
- * a tela `sem-internet`; o que não foi continua PRONTO no banco — nada sai da
- * fila sem o servidor confirmar.
+ * a tela `sem-internet`; sem acesso (token recusado), para `sem-acesso`. O que
+ * não foi continua PRONTO no banco — nada sai da fila sem o servidor
+ * confirmar. Depois do envio, a mesma ida ao servidor traz o que a associação
+ * aprovou ou devolveu.
  *
  * Nenhum texto de erro chega à agente: qualquer falha inesperada vira a mesma
  * mensagem de "continua guardado".
@@ -49,6 +51,8 @@ export default function Enviando() {
         const d = desfechoDoEnvio(resumo);
         if (d.tipo === 'sem-internet') {
           router.replace({ pathname: '/sem-internet', params: { enviados: String(d.enviados) } });
+        } else if (d.tipo === 'sem-acesso') {
+          router.replace({ pathname: '/sem-acesso', params: { enviados: String(d.enviados) } });
         } else {
           setEstado({ fase: 'fim', desfecho: d });
         }

@@ -29,6 +29,14 @@ dado de família sai do servidor para um celular.** Se o aparelho for perdido,
 roubado ou vendido, o que se perde é o que aquela agente digitou e ainda não
 enviou — não a base da associação.
 
+**A volta da resposta (01/10/2026).** Depois de enviar, o app pergunta ao
+servidor a situação do que ELA enviou (`GET /api/pre-cadastros/situacao`):
+volta só id, situação (pendente, aprovado, devolvido) e o motivo da
+devolução, escrito pela associação para ela corrigir. Não é sincronização:
+nada da base desce, e o registro local só muda de selo (`ENVIADO` → `ACEITO`
+ou `DEVOLVIDO`). O devolvido corrigido sai com o mesmo `id`, e o servidor o
+devolve à fila (ver ADR-0002 da API).
+
 ### 2. O que chega vai para uma fila de aprovação
 
 O envio não cria família. Cria um **chamado** que aparece no sistema web, onde a

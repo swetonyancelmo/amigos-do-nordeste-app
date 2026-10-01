@@ -19,7 +19,7 @@ quase toda decisão não óbvia do projeto.
 npm install
 npx expo start        # roda no Expo Go
 npm run android        # expo run:android
-npm run lint           # expo lint; no-console é erro (privacidade)
+npm run lint           # expo lint; no-console é erro (privacidade). ATENÇÃO: eslint não está nas dependências e o comando falha
 npx jest               # ou `npm run teste`: NÃO existe script "test", então `npm test` falha
 npm run apk            # eas build -p android --profile apk
 ```
@@ -89,6 +89,7 @@ app/                      rotas (expo-router, arquivo = rota)
   enviados.tsx             "Meus cadastros": tudo no aparelho, com selo de situação
   enviando.tsx             progresso do envio da fila
   sem-internet.tsx         envio sem rede: tranquiliza e mostra o que ficou guardado
+  sem-acesso.tsx           token recusado (código reemitido): ativar de novo sem perder a fila
 src/
   design/tokens.ts         cores, espaçamento, tipografia, ALVO_MINIMO
   design/componentes.tsx   Botao, Campo, Marcar, Destaque, ItemLista, Opcoes, Progresso, Barra, Selo, Aviso
@@ -98,7 +99,9 @@ src/
   dados/gravador.ts        debouncer de escrita sem duas gravações se cruzando
   dados/comunidades.ts     lista de comunidades (GET /api/comunidades/opcoes → SQLite, offline)
   dados/api.ts             cliente HTTP (fetch com timeout, Authorization)
-  dados/sincronizar.ts     envio item a item com idempotência
+  dados/sincronizar.ts     envio item a item com idempotência; depois, consulta a situação
+  dados/ativacao.ts        mensagem de falha da ativação conforme a resposta
+  dados/limites.ts         tamanho máximo dos textos (os mesmos da API)
   dados/formPessoa.ts      regras do formulário de pessoa (idade estimada datada, nome opcional)
   dados/idade.ts           idade e totais calculados na hora, datas como AAAA-MM-DD sem Date
   dados/revisao.ts         o que impede salvar (só: sem responsável ou sem ninguém na casa)
@@ -164,14 +167,14 @@ Há testes para toda a camada `src/dados/`, inclusive
 `perdaDeDados.test.ts` ("os quatro jeitos de perder dado"). O `console.*` é
 proibido no lint.
 
-**Lacuna com a API:** o app só envia; não existe rota para o aparelho saber se
-um pré-cadastro foi aprovado ou devolvido. As situações locais `ACEITO` e
-`DEVOLVIDO` (e a tela `cadastro/devolvido`) ainda não têm de onde vir. Hoje o
-envio bem-sucedido deixa o registro em `ENVIADO`. Cuidado com o nome: no
-`POST /api/pre-cadastros`, a resposta `ACEITO` significa "recebido pelo
-servidor", não "aprovado pela associação". Uma rota de consulta nova precisa
-respeitar a ADR-0002 da API: devolver só a situação e o motivo dos
-pré-cadastros **daquela agente**, nunca dado de família.
+**Resposta da associação:** depois do envio, `sincronizar()` consulta
+`GET /api/pre-cadastros/situacao` (só id, situação e motivo, só desta agente —
+ADR-0002 da API) e muda o selo local: `APROVADO` → `ACEITO`, `DEVOLVIDO` →
+`DEVOLVIDO` com o motivo. Cuidado com o nome: no `POST /api/pre-cadastros`, a
+resposta `ACEITO` significa "recebido pelo servidor" (o app marca `ENVIADO`),
+não "aprovado". Recusas permanentes não ficam em loop: 400 vira `DEVOLVIDO`
+local com `MOTIVO_RECUSA`; 401/403 para o envio e leva à tela `sem-acesso`,
+que desativa o aparelho (o token, não a fila) para ativar com código novo.
 
 Distribuição: projeto EAS `@swetonyancelmo/cadastro-familias-app`, com
 keystore já gerada e `expo-updates` configurado. O guia de instalação para a

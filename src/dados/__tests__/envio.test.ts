@@ -1,9 +1,19 @@
 import { describe, expect, test } from '@jest/globals';
-import { desfechoDoEnvio, textoProgresso, textoSemInternet } from '../envio';
+import { desfechoDoEnvio, textoProgresso, textoSemAcesso, textoSemInternet } from '../envio';
 import type { ResumoSincronizacao } from '../sincronizar';
 
 function resumo(r: Partial<ResumoSincronizacao>): ResumoSincronizacao {
-  return { enviados: 0, jaRecebidos: 0, comErro: 0, semInternet: false, ...r };
+  return {
+    enviados: 0,
+    jaRecebidos: 0,
+    comErro: 0,
+    semInternet: false,
+    semAcesso: false,
+    recusados: 0,
+    aprovados: 0,
+    devolvidos: 0,
+    ...r,
+  };
 }
 
 /** Nenhuma mensagem pode deixar escapar termo técnico para a agente. */
@@ -56,6 +66,38 @@ describe('desfechoDoEnvio', () => {
     expect(d.texto).toMatch(/^Os que ficaram continuam guardados/);
   });
 
+  test('sem acesso vai para a tela própria, levando quantos já foram', () => {
+    expect(desfechoDoEnvio(resumo({ enviados: 1, semAcesso: true }))).toEqual({ tipo: 'sem-acesso', enviados: 1 });
+  });
+
+  test('recusado pelo servidor volta para corrigir e o texto diz onde ver', () => {
+    const d = desfechoDoEnvio(resumo({ enviados: 1, recusados: 1 }));
+    if (d.tipo !== 'fim') throw new Error('esperava fim');
+    expect(d.tom).toBe('atencao');
+    expect(d.texto).toMatch(/1 cadastro voltou para você corrigir/);
+    expect(d.texto).toMatch(/Meus cadastros\.$/);
+  });
+
+  test('conta o que a associação aprovou e devolveu desde a última vez', () => {
+    const d = desfechoDoEnvio(resumo({ aprovados: 2, devolvidos: 1 }));
+    if (d.tipo !== 'fim') throw new Error('esperava fim');
+    expect(d.titulo).toBe('Novidades da associação');
+    expect(d.tom).toBe('atencao');
+    expect(d.texto).toMatch(/devolveu 1 cadastro/);
+    expect(d.texto).toMatch(/aprovou 2 cadastros/);
+  });
+
+  test('só aprovação é notícia calma', () => {
+    const d = desfechoDoEnvio(resumo({ enviados: 1, aprovados: 1 }));
+    expect(d).toMatchObject({ tipo: 'fim', tom: 'calmo', titulo: '1 cadastro enviado' });
+  });
+
+  test('as novidades também não têm termo técnico', () => {
+    const d = desfechoDoEnvio(resumo({ enviados: 1, comErro: 1, recusados: 2, aprovados: 1, devolvidos: 1 }));
+    if (d.tipo !== 'fim') throw new Error('esperava fim');
+    expect(d.texto).not.toMatch(TECNICO);
+  });
+
   test('fila vazia não finge que enviou', () => {
     expect(desfechoDoEnvio(resumo({}))).toMatchObject({ titulo: 'Não havia nada para enviar' });
   });
@@ -90,6 +132,20 @@ describe('textoSemInternet', () => {
   test('nenhum texto tem termo técnico', () => {
     for (const [g, e] of [[0, 0], [0, 1], [1, 0], [4, 2]]) {
       expect(textoSemInternet(g, e)).not.toMatch(TECNICO);
+    }
+  });
+});
+
+describe('textoSemAcesso', () => {
+  test('diz que o que ficou continua guardado e vai depois de ativar', () => {
+    expect(textoSemAcesso(2, 1)).toBe(
+      '1 cadastro chegou antes. Seus 2 cadastros continuam guardados no celular e vão quando o celular for ativado de novo.',
+    );
+  });
+
+  test('nenhum texto tem termo técnico', () => {
+    for (const [g, e] of [[0, 0], [1, 0], [3, 2]]) {
+      expect(textoSemAcesso(g, e)).not.toMatch(TECNICO);
     }
   });
 });
