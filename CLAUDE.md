@@ -177,3 +177,9 @@ keystore já gerada e `expo-updates` configurado. O guia de instalação para a
 agente está em `docs/instalacao/instalar-no-celular.md`.
 
 Protótipo: [Figma do app](https://www.figma.com/design/SA3REA1kBhYYeiJf6dxH1J)
+
+## Skills
+
+Em `.claude/skills/`: `nova-tela-app`, `migracao-sqlite-app`, `gerar-apk` e
+`preparar-pr-app`. Mudança no que o app envia à API: skill
+`mudanca-de-contrato`, na pasta que agrupa os três repositórios.
