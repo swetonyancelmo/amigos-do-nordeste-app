@@ -9,7 +9,10 @@ a agente está em [`instalacao/instalar-no-celular.md`](instalacao/instalar-no-c
 - [ ] **`extra.apiUrl` no `app.json` aponta para a API de verdade**, com
       `https://`. O valor de exemplo (`cadastro-familias-api.exemplo.com.br`)
       gera um APK que instala e abre, mas não ativa. `http://` também não
-      serve: o Android bloqueia tráfego sem TLS num build de release.
+      serve: o Android bloqueia tráfego sem TLS num build de release. Confira
+      também que não há `EXPO_PUBLIC_API_URL` de rede local no `.env` nem nas
+      variáveis do EAS: ela tem prioridade sobre o `app.json`
+      (`app.config.js`). Teste contra API local é pelo Expo Go.
 - [ ] **Subir `android.versionCode` no `app.json`** se já existe um APK na mão
       de alguém. O Android recusa instalar por cima uma versão com código
       igual ou menor. Suba `version` junto (`0.1.0` → `0.1.1`).

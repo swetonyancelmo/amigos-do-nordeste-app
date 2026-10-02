@@ -14,6 +14,7 @@ import {
 } from '@/dados/comunidades';
 import { buscar, buscarRascunhoAberto, novoId, salvarRascunho } from '@/dados/fila';
 import { criarGravador } from '@/dados/gravador';
+import { LIMITES } from '@/dados/limites';
 import type { PreCadastro } from '@/dados/tipos';
 
 /**
@@ -210,6 +211,7 @@ export default function Familia() {
         value={form.responsavelNome}
         onChangeText={t => mudar({ responsavelNome: t })}
         autoCapitalize="words"
+        maxLength={LIMITES.responsavelNome}
       />
 
       <Campo
@@ -217,6 +219,7 @@ export default function Familia() {
         dica="Com DDD."
         value={form.telefone}
         onChangeText={t => mudar({ telefone: t })}
+        maxLength={LIMITES.telefone}
         keyboardType="phone-pad"
         textContentType="telephoneNumber"
         autoComplete="tel"
@@ -243,6 +246,7 @@ export default function Familia() {
           value={form.comunidadeOutra}
           onChangeText={t => mudar({ comunidadeOutra: t })}
           autoCapitalize="words"
+          maxLength={LIMITES.comunidadeNome}
         />
       ) : null}
 
@@ -260,6 +264,7 @@ export default function Familia() {
         placeholder="Ex.: casa azul depois da igreja"
         value={form.pontoReferencia}
         onChangeText={t => mudar({ pontoReferencia: t })}
+        maxLength={LIMITES.pontoReferencia}
       />
 
       {erroAoGuardar ? (

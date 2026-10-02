@@ -12,7 +12,11 @@ import type { EnvioPreCadastro, Pessoa, PreCadastro } from '../tipos';
 jest.mock('expo-sqlite', () => jest.requireActual('../../testes/sqliteEmNode'));
 
 const mockApiPost = jest.fn<(rota: string, corpo: unknown) => Promise<unknown>>();
-jest.mock('../api', () => ({ apiPost: (...a: [string, unknown]) => mockApiPost(...a) }));
+// a consulta de situação devolve vazio: ninguém da associação revisou nada
+jest.mock('../api', () => ({
+  apiPost: (...a: [string, unknown]) => mockApiPost(...a),
+  apiGet: async () => [],
+}));
 
 // a fila é a de verdade; só o `marcarSituacao` é espiado, para contar quantas
 // vezes um cadastro foi marcado ENVIADO
@@ -155,7 +159,7 @@ describe('2. enviar o mesmo pré-cadastro duas vezes: uma família só', () => {
 
     const segunda = await sincronizar();
 
-    expect(segunda).toEqual({ enviados: 0, jaRecebidos: 1, comErro: 0, semInternet: false });
+    expect(segunda).toMatchObject({ enviados: 0, jaRecebidos: 1, comErro: 0, semInternet: false });
     // o mesmo id nas duas tentativas, e é o id que nasceu no aparelho
     expect(recebidos).toEqual(['a', 'a']);
     expect([...noServidor.keys()]).toEqual(['a']);
@@ -170,7 +174,7 @@ describe('2. enviar o mesmo pré-cadastro duas vezes: uma família só', () => {
 
     const segunda = await sincronizar();
 
-    expect(segunda).toEqual({ enviados: 0, jaRecebidos: 0, comErro: 0, semInternet: false });
+    expect(segunda).toMatchObject({ enviados: 0, jaRecebidos: 0, comErro: 0, semInternet: false });
     expect(recebidos).toEqual(['a']);
     expect(await buscar('a')).toEqual(enviado);
     expect(vezesMarcadoEnviado('a')).toBe(1);
@@ -207,7 +211,7 @@ describe('3. sem internet no meio do lote', () => {
       });
     const r = await sincronizar();
 
-    expect(r).toEqual({ enviados: 1, jaRecebidos: 0, comErro: 0, semInternet: true });
+    expect(r).toMatchObject({ enviados: 1, jaRecebidos: 0, comErro: 0, semInternet: true });
     // nem tentou o terceiro
     expect(mockApiPost).toHaveBeenCalledTimes(2);
 
@@ -229,7 +233,7 @@ describe('3. sem internet no meio do lote', () => {
     // a internet volta
     const r2 = await sincronizar();
 
-    expect(r2).toEqual({ enviados: 2, jaRecebidos: 0, comErro: 0, semInternet: false });
+    expect(r2).toMatchObject({ enviados: 2, jaRecebidos: 0, comErro: 0, semInternet: false });
     expect([...noServidor.keys()].sort()).toEqual(['a', 'b', 'c']);
     expect(await contarPendentes()).toBe(0);
     // o que chegou ao servidor é o que a agente digitou

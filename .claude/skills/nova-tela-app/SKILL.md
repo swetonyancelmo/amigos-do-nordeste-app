@@ -94,7 +94,7 @@ fechar e abrir o app. Dados fictícios ("Responsável", "Ana"). Mock de rede com
 ```bash
 npx jest src/dados/__tests__/<assunto>.test.ts
 npx jest && npm run lint
-npx expo start      # conferir no Expo Go; em dev, "Entrar sem código (dev)" pula a ativação
+npx expo start      # conferir no Expo Go; para ativar, um convite do semear.sh da API (.env com EXPO_PUBLIC_API_URL)
 ```
 
 Se não foi possível abrir no celular ou no emulador, diga isso ao entregar.

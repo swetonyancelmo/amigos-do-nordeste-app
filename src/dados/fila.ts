@@ -2,8 +2,9 @@
  * A fila de saída. Toda escrita do app passa por aqui.
  *
  * O aparelho é a fonte da verdade até o servidor confirmar. Por isso nada é
- * apagado ao enviar: o registro muda de situação (ENVIADO → ACEITO) e continua
- * no celular, para a agente poder olhar depois. Só some quando ela apaga.
+ * apagado ao enviar: o registro muda de situação (ENVIADO → ACEITO ou
+ * DEVOLVIDO, conforme a consulta de situação em sincronizar.ts) e continua no
+ * celular, para a agente poder olhar depois. Só some quando ela apaga.
  */
 import * as Crypto from 'expo-crypto';
 import { abrirBanco } from './banco';
@@ -210,6 +211,15 @@ export async function buscarRascunhoAberto(): Promise<PreCadastro | null> {
 export async function listarPendentes(): Promise<PreCadastro[]> {
   const todos = await listarTodos();
   return todos.filter(p => p.situacao === 'PRONTO');
+}
+
+/** Ids que foram ao servidor e esperam a associação: é por eles que o app pergunta a situação. */
+export async function listarIdsEnviados(): Promise<string[]> {
+  const db = await abrirBanco();
+  const linhas = await db.getAllAsync<{ id: string }>(
+    "SELECT id FROM pre_cadastro WHERE situacao = 'ENVIADO' ORDER BY enviado_em",
+  );
+  return linhas.map(l => l.id);
 }
 
 export async function contarPendentes(): Promise<number> {

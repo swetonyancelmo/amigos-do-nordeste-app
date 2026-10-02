@@ -4,8 +4,8 @@ import { useRouter } from 'expo-router';
 import { Aviso, Botao, Campo } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import { apiPost } from '@/dados/api';
+import { mensagemFalhaAtivacao } from '@/dados/ativacao';
 import { atualizarComunidades } from '@/dados/comunidades';
-import { SemInternet } from '@/dados/sincronizar';
 import { useSessao } from '@/sessao/sessao';
 
 type RespostaAtivacao = { token: string; nomeAgente: string };
@@ -32,11 +32,7 @@ export default function Ativar() {
       await atualizarComunidades().catch(() => undefined);
       router.replace('/pin?criar=1');
     } catch (e) {
-      setErro(
-        e instanceof SemInternet
-          ? 'Você precisa de internet só nesta primeira vez. Tente perto de um sinal.'
-          : 'Código não encontrado. Confira os números com a associação.',
-      );
+      setErro(mensagemFalhaAtivacao(e));
     } finally {
       setCarregando(false);
     }
@@ -74,17 +70,6 @@ export default function Ativar() {
         desabilitado={limpo.length < 6}
       />
 
-      {__DEV__ ? (
-        // Atalho só em desenvolvimento: pula a API para dar para ver o fluxo.
-        <Botao
-          titulo="Entrar sem código (dev)"
-          variante="contorno"
-          aoTocar={async () => {
-            await ativar('token-dev', 'Maria');
-            router.replace('/pin?criar=1');
-          }}
-        />
-      ) : null}
     </ScrollView>
   );
 }

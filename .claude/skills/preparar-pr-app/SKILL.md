@@ -57,7 +57,7 @@ O app não tem template de PR. Use esta estrutura:
 ```
 ## O que muda
 ## Por quê            (issue ou ADR)
-## Como testar        (Expo Go / emulador; "Entrar sem código (dev)" se não precisar de API)
+## Como testar        (Expo Go / emulador, ativado com um convite da API local)
 ## Checklist
 - [ ] `npx jest && npm run lint` passam
 - [ ] Testei no celular ou emulador, não só nos testes

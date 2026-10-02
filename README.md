@@ -24,10 +24,11 @@ React Native com Expo · SQLite local · distribuição por APK.
 | Meus cadastros e cadastro devolvido | `app/enviados.tsx`, `app/cadastro/devolvido.tsx` |
 | Testes da camada de dados | `src/dados/__tests__/` |
 
-**Falta:** a API ainda não tem rota para o aparelho saber se um pré-cadastro
-foi aprovado ou devolvido. Por isso as situações `ACEITO` e `DEVOLVIDO` ainda
-não chegam ao celular. Depois de enviado, o cadastro fica em "esperando
-aprovação".
+Depois de enviar (ou pelo botão "Ver se a associação já respondeu" em Meus
+cadastros), o app consulta `GET /api/pre-cadastros/situacao`: o aprovado vira
+`ACEITO` e o devolvido vira `DEVOLVIDO`, com o motivo, pronto para "corrigir e
+reenviar". Se o servidor recusa o token (código reemitido pela associação), a
+tela "Este celular perdeu o acesso" leva a ativar de novo, sem perder a fila.
 
 ---
 
@@ -40,9 +41,14 @@ npm run lint
 npx jest                # ou `npm run teste` (não existe script "test")
 ```
 
-Aponte para a API local editando `extra.apiUrl` no `app.json`. Em
-desenvolvimento, a tela de ativação tem um botão "Entrar sem código (dev)"
-para ver o fluxo sem API.
+Para apontar para a API local, copie `.env.example` para `.env` e ponha o IP
+da máquina na rede em `EXPO_PUBLIC_API_URL` (nunca `localhost`: no celular é o
+próprio celular). Reinicie o `npx expo start` depois de mudar. `http://` só
+funciona no Expo Go; o APK de release exige a API em `https://`. Sem `.env`,
+vale o `extra.apiUrl` do `app.json`.
+
+O código de convite sai do painel (API: `POST /api/agentes`, ou o
+`semear.sh` da skill `rodar-api-local` do repositório da API).
 
 ## Gerar o APK
 

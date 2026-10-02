@@ -45,3 +45,14 @@ export type ResultadoEnvio = {
   situacao: 'ACEITO' | 'JA_RECEBIDO' | 'ERRO';
   mensagem?: string;
 };
+
+/**
+ * Resposta de GET /api/pre-cadastros/situacao: só o que ESTA agente enviou.
+ * A situação é a da fila do servidor (PENDENTE | APROVADO | DEVOLVIDO), que
+ * no aparelho vira ENVIADO, ACEITO ou DEVOLVIDO.
+ */
+export type SituacaoNoServidor = {
+  id: string;
+  situacao: 'PENDENTE' | 'APROVADO' | 'DEVOLVIDO';
+  motivoDevolucao: string | null;
+};

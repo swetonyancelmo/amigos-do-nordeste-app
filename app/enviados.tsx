@@ -65,6 +65,15 @@ export default function Enviados() {
         <View style={e.cabecalho}>
           <Text style={e.titulo}>Meus cadastros</Text>
           <Text style={e.p}>Ficam no celular até você apagar. Toque num devolvido para corrigir.</Text>
+          {cadastros.some(c => c.situacao === 'ENVIADO') ? (
+            // A resposta da associação só chega quando o celular pergunta;
+            // o envio já pergunta, mas sem nada na fila não há envio.
+            <Botao
+              titulo="Ver se a associação já respondeu"
+              variante="contorno"
+              aoTocar={() => router.push('/enviando')}
+            />
+          ) : null}
         </View>
       }
       ListEmptyComponent={
