@@ -7,10 +7,12 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "backgroundColor": "#FAF6F1",
+    "icon": "./assets/icon.png",
     "android": {
       "package": "br.org.amigosdonordeste.cadastro",
       "versionCode": 1,
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#E54314"
       }
     },
