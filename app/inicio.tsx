@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Aviso, Botao } from '@/design/componentes';
 import { cores, esp, raio, texto } from '@/design/tokens';
@@ -25,8 +25,10 @@ export default function Inicio() {
     }, []),
   );
 
+  const contador = pendentes === 1 ? 'cadastro esperando envio' : 'cadastros esperando envio';
+
   return (
-    <View style={e.tela}>
+    <ScrollView contentContainerStyle={e.tela}>
       <View>
         <Text style={e.nome}>{nomeAgente ?? 'Agente de saúde'}</Text>
         <Text style={e.papel}>Agente comunitária de saúde</Text>
@@ -34,11 +36,10 @@ export default function Inicio() {
 
       {pendentes > 0 ? (
         <View style={e.fila}>
-          <View style={e.contador}>
+          {/* uma frase só para o TalkBack, não "3" e depois o resto */}
+          <View style={e.contador} accessible accessibilityLabel={`${pendentes} ${contador}`}>
             <Text style={e.numero}>{pendentes}</Text>
-            <Text style={e.contadorTexto}>
-              {pendentes === 1 ? 'cadastro esperando envio' : 'cadastros esperando envio'}
-            </Text>
+            <Text style={e.contadorTexto}>{contador}</Text>
           </View>
           <Botao titulo="Enviar agora" aoTocar={() => router.push('/enviando')} />
           <Text style={e.miudo}>
@@ -75,12 +76,12 @@ export default function Inicio() {
           ›
         </Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const e = StyleSheet.create({
-  tela: { flex: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
+  tela: { flexGrow: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
   nome: { ...texto.subtitulo, color: cores.tinta },
   papel: { ...texto.apoio, color: cores.apagado },
 
@@ -98,7 +99,7 @@ const e = StyleSheet.create({
   miudo: { ...texto.apoio, color: cores.apagado },
 
   principal: {
-    backgroundColor: cores.verde,
+    backgroundColor: cores.verdeBotao,
     borderRadius: raio.xl,
     paddingVertical: esp.lg,
     alignItems: 'center',

@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSessao } from '@/sessao/sessao';
-import { cores } from '@/design/tokens';
+import { Carregando } from '@/design/componentes';
 
 /** Porta de entrada: manda para a tela certa conforme o estado da sessão. */
 export default function Entrada() {
@@ -17,9 +16,5 @@ export default function Entrada() {
     else router.replace('/inicio');
   }, [estado, router]);
 
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <ActivityIndicator color={cores.laranja} size="large" />
-    </View>
-  );
+  return <Carregando />;
 }

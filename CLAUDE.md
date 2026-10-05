@@ -92,7 +92,7 @@ app/                      rotas (expo-router, arquivo = rota)
   sem-acesso.tsx           token recusado (código reemitido): ativar de novo sem perder a fila
 src/
   design/tokens.ts         cores, espaçamento, tipografia, ALVO_MINIMO
-  design/componentes.tsx   Botao, Campo, Marcar, Destaque, ItemLista, Opcoes, Progresso, Barra, Selo, Aviso
+  design/componentes.tsx   Titulo, Carregando, Botao, Campo, Marcar, Destaque, ItemLista, Opcoes, Progresso, Barra, Selo, Aviso, useAnunciar
   dados/banco.ts           SQLite + migrações versionadas (PRAGMA user_version)
   dados/tipos.ts           PreCadastro, Pessoa, Situacao — tipos compartilhados
   dados/fila.ts            toda leitura/escrita da fila de saída
@@ -158,6 +158,13 @@ de toque nunca abaixo de `ALVO_MINIMO` (56px), corpo de texto nunca abaixo de
 `Marcar`, `Destaque`, `ItemLista`, `Opcoes`, `Progresso`, `Barra`, `Selo`,
 `Aviso`) em vez de estilo solto — se faltar uma
 variante, acrescente-a em `componentes.tsx`.
+
+Acessibilidade (TalkBack): título de tela é `<Titulo>` (cabeçalho); estado que
+muda sem toque da agente (erro, fim de envio, tela que aparece sozinha) é
+falado com `useAnunciar` — `Aviso tom="erro"` e o `erro` do `Campo` já falam
+sozinhos. Texto branco só sobre `laranjaBotao`/`verdeBotao`, borda de controle
+em `bordaControle`. Os testes de tela em `src/__tests__/acessibilidade/`
+procuram tudo por papel e nome acessível.
 
 ## Estado do projeto
 

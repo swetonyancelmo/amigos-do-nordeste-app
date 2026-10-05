@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { Aviso, Botao, Destaque, ItemLista, Progresso, Selo } from '@/design/componentes';
+import { Aviso, Botao, Carregando, Destaque, ItemLista, Progresso, Titulo } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import { motivoParaMostrar } from '@/dados/devolvido';
 import { buscar, marcarPronto } from '@/dados/fila';
@@ -78,11 +78,7 @@ export default function Revisar() {
   }
 
   if (!cadastro || !id) {
-    return (
-      <View style={e.carregando}>
-        <ActivityIndicator color={cores.laranja} size="large" />
-      </View>
-    );
+    return <Carregando />;
   }
 
   const hoje = hojeLocal();
@@ -105,7 +101,7 @@ export default function Revisar() {
     <View style={e.raiz}>
       <ScrollView contentContainerStyle={e.tela}>
         <Progresso passo={3} total={3} />
-        <Text style={e.titulo}>Revisar e salvar</Text>
+        <Titulo>Revisar e salvar</Titulo>
         <Text style={e.p}>Confira com a família antes de salvar. Toque em algo para corrigir.</Text>
 
         {cadastro.motivoDevolucao !== null ? (
@@ -130,7 +126,7 @@ export default function Revisar() {
             key={p.id}
             titulo={p.nome ?? 'Pessoa sem nome'}
             detalhe={descreverPessoa(p, hoje)}
-            selo={p.cadastroIncompleto ? <Selo texto="FALTA O NOME" tom="espera" /> : undefined}
+            selo={p.cadastroIncompleto ? { texto: 'FALTA O NOME', tom: 'espera' } : undefined}
             aoTocar={() => router.push({ pathname: '/cadastro/pessoa', params: { id, pessoaId: p.id } })}
           />
         ))}
@@ -171,6 +167,7 @@ export default function Revisar() {
           aoTocar={salvar}
           carregando={salvando}
           desabilitado={impedimento !== null}
+          dica={impedimento ?? undefined}
         />
       </View>
     </View>
@@ -200,9 +197,7 @@ function descreverFaltas(semNome: number, semIdade: number): string {
 
 const e = StyleSheet.create({
   raiz: { flex: 1 },
-  carregando: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   tela: { flexGrow: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
-  titulo: { ...texto.titulo, color: cores.tinta },
   p: { ...texto.corpo, color: cores.apagado },
   motivo: { ...texto.corpo, color: cores.tinta },
   rotulo: { ...texto.rotulo, color: cores.apagado, marginTop: esp.sm },

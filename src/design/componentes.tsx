@@ -5,8 +5,9 @@
  * não escreva estilo solto na tela. É isso que mantém o alvo de toque grande
  * em todo lugar, que é o requisito de usabilidade do app.
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
+  AccessibilityInfo,
   ActivityIndicator,
   Pressable,
   StyleSheet,
@@ -17,6 +18,51 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { ALVO_MINIMO, cores, esp, raio, texto } from './tokens';
+
+/* --------------------------------------------------------------- Anúncio */
+
+/**
+ * Fala a mensagem no leitor de tela (TalkBack) quando ela aparece ou muda.
+ *
+ * Mudança de estado que só aparece na tela — erro, fim do envio, troca de
+ * passo do PIN — não chega a quem não está enxergando: a agente toca e não
+ * sabe o que aconteceu. Live region sozinha não basta, porque o Android nem
+ * sempre lê uma view que acabou de surgir.
+ */
+export function useAnunciar(mensagem: string | null | undefined) {
+  useEffect(() => {
+    if (mensagem) AccessibilityInfo.announceForAccessibility(mensagem);
+  }, [mensagem]);
+}
+
+/** Texto que é só visual: o leitor de tela pula (o mesmo já está num rótulo). */
+const soVisual = { importantForAccessibility: 'no', accessibilityElementsHidden: true } as const;
+
+/* ----------------------------------------------------------------- Título */
+
+/**
+ * Título da tela, marcado como cabeçalho para a navegação por cabeçalhos do
+ * TalkBack. `anunciar` fala o título ao abrir: para telas que aparecem sozinhas
+ * por causa de um estado (sem internet, sem acesso), não por um toque.
+ */
+export function Titulo({ children, anunciar = false }: { children: string; anunciar?: boolean }) {
+  useAnunciar(anunciar ? children : null);
+  return (
+    <Text accessibilityRole="header" style={e.titulo}>
+      {children}
+    </Text>
+  );
+}
+
+/* ------------------------------------------------------------- Carregando */
+
+export function Carregando() {
+  return (
+    <View style={e.carregando}>
+      <ActivityIndicator color={cores.laranja} size="large" accessibilityLabel="Carregando" />
+    </View>
+  );
+}
 
 /* ------------------------------------------------------------------ Botão */
 
@@ -29,6 +75,7 @@ export function Botao({
   variante = 'primario',
   carregando = false,
   desabilitado = false,
+  dica,
   estilo,
 }: {
   titulo: string;
@@ -36,17 +83,21 @@ export function Botao({
   variante?: VarianteBotao;
   carregando?: boolean;
   desabilitado?: boolean;
+  /** Lida pelo TalkBack depois do nome. Num botão desabilitado, diga por quê. */
+  dica?: string;
   estilo?: ViewStyle;
 }) {
   const inativo = desabilitado || carregando;
   const vazado = variante === 'contorno' || variante === 'tracejado';
-  const fundo = variante === 'confirmar' ? cores.verde : vazado ? 'transparent' : cores.laranja;
+  const fundo = variante === 'confirmar' ? cores.verdeBotao : vazado ? 'transparent' : cores.laranjaBotao;
   const corTexto = vazado ? cores.tinta : cores.branco;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={titulo}
+      // o "+" de "+ Adicionar" é desenho; lido, vira "mais, adicionar"
+      accessibilityLabel={titulo.replace(/^\+\s*/, '')}
+      accessibilityHint={dica}
       accessibilityState={{ disabled: inativo, busy: carregando }}
       onPress={aoTocar}
       disabled={inativo}
@@ -75,9 +126,12 @@ export function Campo({
   erro,
   ...props
 }: { rotulo: string; dica?: string; erro?: string } & TextInputProps) {
+  useAnunciar(erro);
   return (
     <View style={{ gap: esp.sm }}>
-      <Text style={e.rotulo}>{rotulo.toUpperCase()}</Text>
+      <Text style={e.rotulo} {...soVisual}>
+        {rotulo.toUpperCase()}
+      </Text>
       <TextInput
         placeholderTextColor={cores.apagado}
         style={[e.campo, erro ? e.campoComErro : null]}
@@ -88,12 +142,15 @@ export function Campo({
         accessibilityHint={erro ?? dica}
         {...props}
       />
+      {/* o erro e a dica já vão no accessibilityHint do campo */}
       {erro ? (
-        <Text style={e.erro} accessibilityLiveRegion="polite">
+        <Text style={e.erro} {...soVisual}>
           {erro}
         </Text>
       ) : dica ? (
-        <Text style={e.dica}>{dica}</Text>
+        <Text style={e.dica} {...soVisual}>
+          {dica}
+        </Text>
       ) : null}
     </View>
   );
@@ -165,7 +222,8 @@ export function ItemLista({
 }: {
   titulo: string;
   detalhe?: string;
-  selo?: React.ReactNode;
+  /** Recebe os dados, não o desenho: o texto do selo entra no nome acessível da linha. */
+  selo?: { texto: string; tom: TomSelo };
   aoTocar?: () => void;
   acao?: { titulo: string; aoTocar: () => void; rotuloAcessivel?: string };
 }) {
@@ -173,21 +231,26 @@ export function ItemLista({
     <>
       <Text style={e.itemTitulo}>{titulo}</Text>
       {detalhe ? <Text style={e.dica}>{detalhe}</Text> : null}
-      {selo}
+      {selo ? <Selo texto={selo.texto} tom={selo.tom} /> : null}
     </>
   );
+  // O rótulo do Pressable substitui o texto de dentro: o que não estiver
+  // aqui (como a situação do selo) o TalkBack não lê.
+  const rotulo = [titulo, detalhe, selo?.texto.toLowerCase()].filter(Boolean).join(', ');
   return (
     <View style={e.item}>
       {aoTocar ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={detalhe ? `${titulo}, ${detalhe}` : titulo}
+          accessibilityLabel={rotulo}
           onPress={aoTocar}
           style={({ pressed }) => [e.itemCorpo, pressed && { opacity: 0.85 }]}>
           {corpo}
         </Pressable>
       ) : (
-        <View style={e.itemCorpo}>{corpo}</View>
+        <View style={e.itemCorpo} accessible accessibilityLabel={rotulo}>
+          {corpo}
+        </View>
       )}
       {acao ? (
         <Pressable
@@ -222,7 +285,9 @@ export function Opcoes<T extends string>({
 }) {
   return (
     <View style={{ gap: esp.sm }} accessibilityRole="radiogroup" accessibilityLabel={rotulo}>
-      <Text style={e.rotulo}>{rotulo.toUpperCase()}</Text>
+      <Text style={e.rotulo} {...soVisual}>
+        {rotulo.toUpperCase()}
+      </Text>
       {opcoes.map(o => {
         const marcado = o.valor === selecionado;
         return (
@@ -250,9 +315,12 @@ export function Opcoes<T extends string>({
 
 export function Progresso({ passo, total }: { passo: number; total: number }) {
   return (
+    // accessible: sem isso o Android não foca a View e o valor nunca é lido
     <View
       style={{ gap: esp.sm }}
+      accessible
       accessibilityRole="progressbar"
+      accessibilityLabel={`Passo ${passo} de ${total}`}
       accessibilityValue={{ min: 1, max: total, now: passo, text: `${passo} de ${total}` }}>
       <View style={e.trilho}>
         {Array.from({ length: total }, (_, i) => (
@@ -278,6 +346,7 @@ export function Barra({ feitos, total, rotulo }: { feitos: number; total: number
   return (
     <View
       style={e.barra}
+      accessible
       accessibilityRole="progressbar"
       accessibilityLabel={rotulo}
       accessibilityValue={{ min: 0, max: total, now: feitos, text: rotulo }}>
@@ -288,7 +357,9 @@ export function Barra({ feitos, total, rotulo }: { feitos: number; total: number
 
 /* ------------------------------------------------------------------- Selo */
 
-export function Selo({ texto: t, tom }: { texto: string; tom: 'espera' | 'aceito' | 'devolvido' }) {
+type TomSelo = 'espera' | 'aceito' | 'devolvido';
+
+export function Selo({ texto: t, tom }: { texto: string; tom: TomSelo }) {
   const paleta = {
     espera: { fundo: cores.ambarSuave, cor: cores.ambarEscrita },
     aceito: { fundo: cores.verdeSuave, cor: cores.verdeEscrita },
@@ -308,11 +379,17 @@ export function Aviso({
   titulo,
   children,
   tom = 'calmo',
+  anunciar = tom === 'erro',
 }: {
   titulo?: string;
   children: React.ReactNode;
   tom?: 'calmo' | 'atencao' | 'erro';
+  /** Fala o aviso ao aparecer. Erro sempre fala: senão a agente toca e não sabe que falhou. */
+  anunciar?: boolean;
 }) {
+  const corpo = typeof children === 'string' ? children : '';
+  useAnunciar(anunciar ? [titulo, corpo].filter(Boolean).join('. ') : null);
+
   const paleta = {
     calmo: { fundo: cores.verdeSuave, cor: cores.verdeEscrita },
     atencao: { fundo: cores.ambarSuave, cor: cores.ambarEscrita },
@@ -339,6 +416,9 @@ const e = StyleSheet.create({
   },
   botaoTexto: { fontSize: 19, fontWeight: '600' },
 
+  titulo: { ...texto.titulo, color: cores.tinta },
+  carregando: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+
   item: {
     flexDirection: 'row',
     alignItems: 'stretch',
@@ -364,14 +444,14 @@ const e = StyleSheet.create({
     borderLeftColor: cores.linha,
     paddingHorizontal: esp.sm,
   },
-  itemAcaoTexto: { fontSize: 16, fontWeight: '600', color: cores.laranja },
+  itemAcaoTexto: { fontSize: 16, fontWeight: '600', color: cores.laranjaEscrita },
 
   rotulo: { ...texto.rotulo, color: cores.apagado },
   campo: {
     minHeight: ALVO_MINIMO + 4,
     borderRadius: raio.md,
     borderWidth: 1.5,
-    borderColor: cores.linha,
+    borderColor: cores.bordaControle,
     backgroundColor: cores.branco,
     paddingHorizontal: esp.md,
     fontSize: 18,
@@ -379,14 +459,14 @@ const e = StyleSheet.create({
   },
   campoComErro: { borderWidth: 2, borderColor: cores.laranja },
   dica: { ...texto.apoio, color: cores.apagado },
-  erro: { ...texto.apoio, fontWeight: '600', color: cores.laranja },
+  erro: { ...texto.apoio, fontWeight: '600', color: cores.laranjaEscrita },
 
   caixa: {
     width: 26,
     height: 26,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: cores.linha,
+    borderColor: cores.bordaControle,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -410,7 +490,7 @@ const e = StyleSheet.create({
     gap: esp.md,
     borderRadius: raio.md,
     borderWidth: 1.5,
-    borderColor: cores.linha,
+    borderColor: cores.bordaControle,
     backgroundColor: cores.branco,
     paddingHorizontal: esp.md,
   },
@@ -421,7 +501,7 @@ const e = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: cores.linha,
+    borderColor: cores.bordaControle,
   },
   marcadorCheio: { borderWidth: 7, borderColor: cores.tinta },
 
@@ -433,7 +513,7 @@ const e = StyleSheet.create({
   barraCheia: { height: '100%', borderRadius: 6, backgroundColor: cores.laranja },
 
   selo: { alignSelf: 'flex-start', borderRadius: raio.sm, paddingHorizontal: 10, paddingVertical: 5 },
-  seloTexto: { fontSize: 12, fontWeight: '700' },
+  seloTexto: { fontSize: 13, fontWeight: '700' },
 
   aviso: { borderRadius: raio.md, padding: esp.md, gap: esp.xs },
   avisoTitulo: { fontSize: 15, fontWeight: '700' },

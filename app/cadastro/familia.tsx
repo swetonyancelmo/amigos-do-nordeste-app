@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Aviso, Botao, Campo, Opcoes, Progresso } from '@/design/componentes';
+import { Aviso, Botao, Campo, Carregando, Opcoes, Progresso, Titulo } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import {
   atualizarComunidades,
@@ -183,17 +183,13 @@ export default function Familia() {
   }
 
   if (!id) {
-    return (
-      <View style={e.carregando}>
-        <ActivityIndicator color={cores.laranja} size="large" />
-      </View>
-    );
+    return <Carregando />;
   }
 
   return (
     <ScrollView contentContainerStyle={e.tela} keyboardShouldPersistTaps="handled">
       <Progresso passo={1} total={3} />
-      <Text style={e.titulo}>A família</Text>
+      <Titulo>A família</Titulo>
       <Text style={e.p}>Quem responde pela casa e onde ela fica.</Text>
 
       {retomado ? (
@@ -280,6 +276,7 @@ export default function Familia() {
         aoTocar={continuar}
         carregando={seguindo}
         desabilitado={form.responsavelNome.trim() === ''}
+        dica={form.responsavelNome.trim() === '' ? 'Escreva o nome do responsável para continuar.' : undefined}
       />
     </ScrollView>
   );
@@ -324,9 +321,7 @@ function doBanco(p: PreCadastro, lista: readonly Comunidade[]): Formulario {
 }
 
 const e = StyleSheet.create({
-  carregando: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   tela: { flexGrow: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
-  titulo: { ...texto.titulo, color: cores.tinta },
   p: { ...texto.corpo, color: cores.apagado },
   miudo: { ...texto.apoio, color: cores.apagado },
 });
