@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { Aviso, Botao, ItemLista, Progresso, Selo } from '@/design/componentes';
+import { Aviso, Botao, Carregando, ItemLista, Progresso, Titulo } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import { buscar, salvarRascunho } from '@/dados/fila';
 import { criarGravador } from '@/dados/gravador';
@@ -121,11 +121,7 @@ export default function Pessoas() {
   }
 
   if (!cadastro || !id) {
-    return (
-      <View style={e.carregando}>
-        <ActivityIndicator color={cores.laranja} size="large" />
-      </View>
-    );
+    return <Carregando />;
   }
 
   const hoje = hojeLocal();
@@ -136,7 +132,7 @@ export default function Pessoas() {
     <View style={e.raiz}>
       <ScrollView contentContainerStyle={e.tela}>
         <Progresso passo={2} total={3} />
-        <Text style={e.titulo}>Quem mora na casa</Text>
+        <Titulo>Quem mora na casa</Titulo>
         <Text style={e.p}>Casa de {cadastro.responsavelNome}. Toque numa pessoa para corrigir.</Text>
 
         {vazia ? (
@@ -150,7 +146,7 @@ export default function Pessoas() {
               key={p.id}
               titulo={p.nome ?? 'Pessoa sem nome'}
               detalhe={descreverPessoa(p, hoje)}
-              selo={p.cadastroIncompleto ? <Selo texto="FALTA O NOME" tom="espera" /> : undefined}
+              selo={p.cadastroIncompleto ? { texto: 'FALTA O NOME', tom: 'espera' } : undefined}
               aoTocar={() => irPara('/cadastro/pessoa', { id, pessoaId: p.id })}
               acao={{
                 titulo: 'Remover',
@@ -184,6 +180,7 @@ export default function Pessoas() {
           aoTocar={() => irPara('/cadastro/revisar', { id })}
           carregando={navegando}
           desabilitado={vazia}
+          dica={vazia ? 'Adicione pelo menos uma pessoa para continuar.' : undefined}
         />
       </View>
     </View>
@@ -192,9 +189,7 @@ export default function Pessoas() {
 
 const e = StyleSheet.create({
   raiz: { flex: 1 },
-  carregando: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   tela: { flexGrow: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
-  titulo: { ...texto.titulo, color: cores.tinta },
   p: { ...texto.corpo, color: cores.apagado },
   rodape: {
     padding: esp.lg,

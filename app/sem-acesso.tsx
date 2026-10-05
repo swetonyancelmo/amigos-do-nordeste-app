@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { Aviso, Botao } from '@/design/componentes';
+import { Aviso, Botao, Titulo, useAnunciar } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import { contarPendentes } from '@/dados/fila';
 import { textoSemAcesso } from '@/dados/envio';
@@ -42,12 +42,17 @@ export default function SemAcesso() {
     router.replace('/ativar');
   }
 
+  const corpo =
+    guardados === null ? 'Seus cadastros continuam guardados no celular.' : textoSemAcesso(guardados, jaForam);
+  // a tela aparece sozinha, no lugar do envio: sem o anúncio, a agente não sabe que o envio parou
+  useAnunciar(`Este celular perdeu o acesso. ${corpo}`);
+
   return (
-    <View style={e.tela}>
-      <Text style={e.titulo}>Este celular perdeu o acesso</Text>
+    <ScrollView contentContainerStyle={e.tela}>
+      <Titulo>Este celular perdeu o acesso</Titulo>
 
       <Aviso titulo="Nada se perdeu" tom="calmo">
-        {guardados === null ? 'Seus cadastros continuam guardados no celular.' : textoSemAcesso(guardados, jaForam)}
+        {corpo}
       </Aviso>
 
       <Text style={e.p}>
@@ -59,13 +64,12 @@ export default function SemAcesso() {
         <Botao titulo="Ativar com código novo" aoTocar={ativarDeNovo} carregando={saindo} />
         <Botao titulo="Voltar ao início" variante="contorno" aoTocar={() => router.dismissTo('/inicio')} />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const e = StyleSheet.create({
-  tela: { flex: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
-  titulo: { ...texto.titulo, color: cores.tinta },
+  tela: { flexGrow: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
   p: { ...texto.corpo, color: cores.apagado },
   rodape: { marginTop: 'auto', gap: esp.md },
 });

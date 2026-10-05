@@ -32,6 +32,22 @@ export const cores = {
   laranjaEscrita: '#A62F0C',
   verdeEscrita: '#0A5E22',
   ambarEscrita: '#7A4E00',
+
+  /**
+   * Fundo de botão com texto branco. O laranja e o verde da marca dão 4.1:1
+   * com branco — abaixo dos 4.5:1 que texto de 19px pede (só conta como
+   * "texto grande" a partir de 24px, ou 18.7px em negrito). Estes dão 5.1:1 e
+   * 5.3:1. O laranja e o verde de marca continuam nos detalhes sem texto.
+   */
+  laranjaBotao: '#C93A0F',
+  verdeBotao: '#0E7D30',
+
+  /**
+   * Borda de controle (campo, opção, caixa de marcar, casa do PIN). A `linha`
+   * dá 1.35:1 contra o branco: ao sol, campo vazio e opção desmarcada somem.
+   * Esta dá 3.8:1, acima do mínimo de 3:1 para limite de componente.
+   */
+  bordaControle: '#8C8178',
 } as const;
 
 /** Escala de espaçamento. Múltiplos de 4. */
@@ -49,7 +65,7 @@ export const texto = {
   corpo: { fontSize: 17, fontWeight: '400' as const, lineHeight: 24 },
   corpoForte: { fontSize: 17, fontWeight: '600' as const, lineHeight: 24 },
   apoio: { fontSize: 14, fontWeight: '400' as const, lineHeight: 20 },
-  rotulo: { fontSize: 11, fontWeight: '700' as const, letterSpacing: 1 },
+  rotulo: { fontSize: 13, fontWeight: '700' as const, letterSpacing: 1 },
 } as const;
 
 export const raio = { sm: 10, md: 12, lg: 14, xl: 16 } as const;

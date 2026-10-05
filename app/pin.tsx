@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Aviso } from '@/design/componentes';
+import { Aviso, Titulo } from '@/design/componentes';
 import { ALVO_MINIMO, cores, esp, raio, texto } from '@/design/tokens';
 import { useSessao } from '@/sessao/sessao';
 
@@ -39,6 +39,7 @@ export default function Pin() {
     if (confirmando === null) {
       setConfirmando(pin);
       setDigitos('');
+      AccessibilityInfo.announceForAccessibility('Agora digite os mesmos 4 números de novo.');
       return;
     }
 
@@ -54,13 +55,18 @@ export default function Pin() {
 
   function tocar(tecla: string) {
     if (tecla === '<') {
-      setDigitos(d => d.slice(0, -1));
+      const novo = digitos.slice(0, -1);
+      setDigitos(novo);
+      AccessibilityInfo.announceForAccessibility(textoDigitados(novo.length));
       return;
     }
     const novo = digitos + tecla;
     if (novo.length > 4) return;
     setDigitos(novo);
-    if (novo.length === 4) completou(novo);
+    // diz quantos, nunca quais: o PIN não pode ser lido em voz alta.
+    // No quarto, quem fala é o resultado (erro ou a próxima tela).
+    if (novo.length < 4) AccessibilityInfo.announceForAccessibility(textoDigitados(novo.length));
+    else completou(novo);
   }
 
   const titulo = criando
@@ -74,11 +80,13 @@ export default function Pin() {
     : 'Digite seus 4 números';
 
   return (
-    <View style={e.tela}>
-      <Text style={e.titulo}>{titulo}</Text>
+    // rola: com a fonte do sistema grande, o teclado não pode sumir da tela
+    <ScrollView contentContainerStyle={e.tela}>
+      <Titulo>{titulo}</Titulo>
       <Text style={e.p}>{subtitulo}</Text>
 
-      <View style={e.bolinhas}>
+      {/* um só elemento para o TalkBack: "2 de 4 números digitados" */}
+      <View style={e.bolinhas} accessible accessibilityLabel={textoDigitados(digitos.length)}>
         {[0, 1, 2, 3].map(i => (
           <View key={i} style={[e.bolinha, i < digitos.length && e.bolinhaCheia]}>
             <Text style={e.ponto} maxFontSizeMultiplier={1.2}>
@@ -116,13 +124,16 @@ export default function Pin() {
           </View>
         ))}
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
+function textoDigitados(n: number): string {
+  return `${n} de 4 números digitados`;
+}
+
 const e = StyleSheet.create({
-  tela: { flex: 1, padding: esp.lg, paddingTop: 80, gap: esp.md },
-  titulo: { ...texto.titulo, color: cores.tinta },
+  tela: { flexGrow: 1, padding: esp.lg, paddingTop: 80, gap: esp.md },
   p: { ...texto.corpo, color: cores.apagado },
 
   bolinhas: { flexDirection: 'row', gap: 14, justifyContent: 'center', marginTop: esp.md },
@@ -131,7 +142,7 @@ const e = StyleSheet.create({
     height: 72,
     borderRadius: raio.lg,
     borderWidth: 1.5,
-    borderColor: cores.linha,
+    borderColor: cores.bordaControle,
     backgroundColor: cores.branco,
     alignItems: 'center',
     justifyContent: 'center',

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, BackHandler, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, BackHandler, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Aviso, Barra, Botao } from '@/design/componentes';
+import { Aviso, Barra, Botao, Titulo, useAnunciar } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import { contarPendentes } from '@/dados/fila';
 import { desfechoDoEnvio, textoProgresso, type Desfecho } from '@/dados/envio';
@@ -79,12 +79,22 @@ export default function Enviando() {
     return () => s.remove();
   }, [enviando]);
 
+  // Cada fase troca a tela inteira; sem anúncio, quem usa TalkBack não sabe
+  // que o envio começou, terminou ou falhou.
+  useAnunciar(
+    estado.fase === 'enviando'
+      ? 'Enviando cadastros'
+      : estado.fase === 'fim'
+        ? `${estado.desfecho.titulo}. ${estado.desfecho.texto}`
+        : 'Não deu para enviar agora. Seus cadastros continuam guardados no celular.',
+  );
+
   const voltar = () => router.dismissTo('/inicio');
 
   if (estado.fase === 'falhou') {
     return (
-      <View style={e.tela}>
-        <Text style={e.titulo}>Não deu para enviar agora</Text>
+      <ScrollView contentContainerStyle={e.tela}>
+        <Titulo>Não deu para enviar agora</Titulo>
         <Aviso titulo="Nada se perdeu" tom="atencao">
           Seus cadastros continuam guardados no celular. Tente de novo daqui a pouco.
         </Aviso>
@@ -92,29 +102,34 @@ export default function Enviando() {
           <Botao titulo="Tentar de novo" aoTocar={() => router.replace('/enviando')} />
           <Botao titulo="Voltar ao início" variante="contorno" aoTocar={voltar} />
         </View>
-      </View>
+      </ScrollView>
     );
   }
 
   if (estado.fase === 'fim') {
     const { desfecho } = estado;
     return (
-      <View style={e.tela}>
-        <Text style={e.titulo}>{desfecho.titulo}</Text>
+      <ScrollView contentContainerStyle={e.tela}>
+        <Titulo>{desfecho.titulo}</Titulo>
         <Aviso tom={desfecho.tom}>{desfecho.texto}</Aviso>
         <View style={e.rodape}>
           <Botao titulo="Voltar ao início" variante="confirmar" aoTocar={voltar} />
           <Botao titulo="Ver meus cadastros" variante="contorno" aoTocar={() => router.replace('/enviados')} />
         </View>
-      </View>
+      </ScrollView>
     );
   }
 
   const { feitos, total } = estado;
   return (
-    <View style={e.tela}>
-      <ActivityIndicator color={cores.laranja} size="large" style={e.girando} />
-      <Text style={e.titulo}>Enviando cadastros</Text>
+    <ScrollView contentContainerStyle={e.tela}>
+      <ActivityIndicator
+        color={cores.laranja}
+        size="large"
+        style={e.girando}
+        accessibilityLabel="Enviando"
+      />
+      <Titulo>Enviando cadastros</Titulo>
 
       {total === null ? null : (
         <View style={e.progresso}>
@@ -130,14 +145,13 @@ export default function Enviando() {
         depois.
       </Aviso>
       <Text style={e.p}>Pode deixar o celular parado um instante.</Text>
-    </View>
+    </ScrollView>
   );
 }
 
 const e = StyleSheet.create({
-  tela: { flex: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
+  tela: { flexGrow: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
   girando: { alignSelf: 'flex-start' },
-  titulo: { ...texto.titulo, color: cores.tinta },
   p: { ...texto.corpo, color: cores.apagado },
   progresso: { gap: esp.sm },
   contagem: { fontSize: 22, fontWeight: '700', color: cores.laranja },

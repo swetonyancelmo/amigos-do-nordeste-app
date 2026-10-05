@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { Aviso, Botao } from '@/design/componentes';
+import { Aviso, Botao, Titulo, useAnunciar } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import { contarPendentes } from '@/dados/fila';
 import { textoSemInternet } from '@/dados/envio';
@@ -34,14 +34,17 @@ export default function SemInternet() {
     }, []),
   );
 
+  const corpo =
+    guardados === null ? 'Seus cadastros continuam guardados no celular.' : textoSemInternet(guardados, jaForam);
+  // a tela aparece sozinha, no lugar do envio: sem o anúncio, a agente não sabe que o envio parou
+  useAnunciar(`Sem internet agora. ${corpo}`);
+
   return (
-    <View style={e.tela}>
-      <Text style={e.titulo}>Sem internet agora</Text>
+    <ScrollView contentContainerStyle={e.tela}>
+      <Titulo>Sem internet agora</Titulo>
 
       <Aviso titulo="Nada se perdeu" tom="calmo">
-        {guardados === null
-          ? 'Seus cadastros continuam guardados no celular.'
-          : textoSemInternet(guardados, jaForam)}
+        {corpo}
       </Aviso>
 
       <Text style={e.p}>
@@ -52,13 +55,12 @@ export default function SemInternet() {
         <Botao titulo="Tentar de novo" aoTocar={() => router.replace('/enviando')} />
         <Botao titulo="Voltar ao início" variante="contorno" aoTocar={() => router.dismissTo('/inicio')} />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const e = StyleSheet.create({
-  tela: { flex: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
-  titulo: { ...texto.titulo, color: cores.tinta },
+  tela: { flexGrow: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
   p: { ...texto.corpo, color: cores.apagado },
   rodape: { marginTop: 'auto', gap: esp.md },
 });

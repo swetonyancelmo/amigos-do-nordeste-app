@@ -1,7 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import { Aviso, Botao, Campo, Destaque, Marcar, Opcoes, Progresso } from '@/design/componentes';
+import {
+  Aviso,
+  Botao,
+  Campo,
+  Carregando,
+  Destaque,
+  Marcar,
+  Opcoes,
+  Progresso,
+  Titulo,
+} from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import { buscar, novoId, salvarRascunho } from '@/dados/fila';
 import {
@@ -185,11 +195,7 @@ export default function PessoaDaCasa() {
   }
 
   if (responsavel === null) {
-    return (
-      <View style={e.carregando}>
-        <ActivityIndicator color={cores.laranja} size="large" />
-      </View>
-    );
+    return <Carregando />;
   }
 
   const hoje = hojeLocal();
@@ -207,7 +213,7 @@ export default function PessoaDaCasa() {
   return (
     <ScrollView contentContainerStyle={e.tela} keyboardShouldPersistTaps="handled">
       <Progresso passo={2} total={3} />
-      <Text style={e.titulo}>{anterior ? 'Corrigir pessoa' : 'Adicionar pessoa'}</Text>
+      <Titulo>{anterior ? 'Corrigir pessoa' : 'Adicionar pessoa'}</Titulo>
       <Text style={e.p}>Casa de {responsavel}.</Text>
 
       <Campo
@@ -288,8 +294,6 @@ function descreverAnos(n: number): string {
 }
 
 const e = StyleSheet.create({
-  carregando: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   tela: { flexGrow: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
-  titulo: { ...texto.titulo, color: cores.tinta },
   p: { ...texto.corpo, color: cores.apagado },
 });

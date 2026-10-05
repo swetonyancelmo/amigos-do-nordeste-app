@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Aviso, Botao, ItemLista, Selo } from '@/design/componentes';
+import { Aviso, Botao, Carregando, ItemLista, Titulo } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import { listarTodos } from '@/dados/fila';
 import { descreverLinha, destinoAoTocar, ordenarRecentes, seloDaSituacao } from '@/dados/meusCadastros';
@@ -49,11 +49,7 @@ export default function Enviados() {
   }
 
   if (!cadastros) {
-    return (
-      <View style={e.carregando}>
-        <ActivityIndicator color={cores.laranja} size="large" />
-      </View>
-    );
+    return <Carregando />;
   }
 
   return (
@@ -63,7 +59,7 @@ export default function Enviados() {
       contentContainerStyle={e.tela}
       ListHeaderComponent={
         <View style={e.cabecalho}>
-          <Text style={e.titulo}>Meus cadastros</Text>
+          <Titulo>Meus cadastros</Titulo>
           <Text style={e.p}>Ficam no celular até você apagar. Toque num devolvido para corrigir.</Text>
           {cadastros.some(c => c.situacao === 'ENVIADO') ? (
             // A resposta da associação só chega quando o celular pergunta;
@@ -82,13 +78,12 @@ export default function Enviados() {
         </Aviso>
       }
       renderItem={({ item }) => {
-        const selo = seloDaSituacao(item.situacao);
         const destino = destinoAoTocar(item);
         return (
           <ItemLista
             titulo={item.responsavelNome || 'Sem responsável'}
             detalhe={descreverLinha(item)}
-            selo={<Selo texto={selo.texto} tom={selo.tom} />}
+            selo={seloDaSituacao(item.situacao)}
             aoTocar={destino ? () => router.push(destino) : undefined}
           />
         );
@@ -98,9 +93,7 @@ export default function Enviados() {
 }
 
 const e = StyleSheet.create({
-  carregando: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   tela: { flexGrow: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
   cabecalho: { gap: esp.sm },
-  titulo: { ...texto.titulo, color: cores.tinta },
   p: { ...texto.corpo, color: cores.apagado },
 });

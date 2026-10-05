@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Aviso, Botao, Campo } from '@/design/componentes';
+import { Aviso, Botao, Campo, Titulo } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import { apiPost } from '@/dados/api';
 import { mensagemFalhaAtivacao } from '@/dados/ativacao';
@@ -40,7 +40,7 @@ export default function Ativar() {
 
   return (
     <ScrollView contentContainerStyle={e.tela} keyboardShouldPersistTaps="handled">
-      <Text style={e.titulo}>Bem-vinda!</Text>
+      <Titulo>Bem-vinda!</Titulo>
       <Text style={e.p}>
         Digite o código que a associação te passou. Você só faz isso uma vez.
       </Text>
@@ -53,9 +53,9 @@ export default function Ativar() {
         maxLength={6}
         placeholder="000000"
         autoFocus
+        // o erro fica no próprio campo: é lido junto com ele e anunciado ao aparecer
+        erro={erro ?? undefined}
       />
-
-      {erro ? <Aviso tom="erro">{erro}</Aviso> : null}
 
       <Aviso tom="atencao">
         O código chega por WhatsApp e vale para um celular só.
@@ -68,6 +68,7 @@ export default function Ativar() {
         aoTocar={continuar}
         carregando={carregando}
         desabilitado={limpo.length < 6}
+        dica={limpo.length < 6 ? 'Digite os 6 números do código para continuar.' : undefined}
       />
 
     </ScrollView>
@@ -76,6 +77,5 @@ export default function Ativar() {
 
 const e = StyleSheet.create({
   tela: { flexGrow: 1, padding: esp.lg, paddingTop: 72, gap: esp.md },
-  titulo: { ...texto.titulo, color: cores.tinta },
   p: { ...texto.corpo, color: cores.apagado },
 });

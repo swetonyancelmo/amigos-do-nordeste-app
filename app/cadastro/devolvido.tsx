@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { Aviso, Botao, Destaque, Selo } from '@/design/componentes';
+import { Aviso, Botao, Carregando, Destaque, Selo, Titulo } from '@/design/componentes';
 import { cores, esp, texto } from '@/design/tokens';
 import { apagar, buscar, reabrirDevolvido } from '@/dados/fila';
 import { motivoParaMostrar, podeCorrigir } from '@/dados/devolvido';
@@ -101,11 +101,7 @@ export default function Devolvido() {
   }
 
   if (!cadastro || !id) {
-    return (
-      <View style={e.carregando}>
-        <ActivityIndicator color={cores.laranja} size="large" />
-      </View>
-    );
+    return <Carregando />;
   }
 
   if (!podeCorrigir(cadastro)) {
@@ -123,7 +119,7 @@ export default function Devolvido() {
     <View style={e.raiz}>
       <ScrollView contentContainerStyle={e.tela}>
         <Selo texto="DEVOLVIDO" tom="devolvido" />
-        <Text style={e.titulo}>{cadastro.responsavelNome || 'Sem responsável'}</Text>
+        <Titulo>{cadastro.responsavelNome || 'Sem responsável'}</Titulo>
         <Text style={e.p}>{descreverLinha(cadastro)}</Text>
 
         <Destaque titulo="O que a associação escreveu">
@@ -155,9 +151,7 @@ export default function Devolvido() {
 
 const e = StyleSheet.create({
   raiz: { flex: 1 },
-  carregando: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   tela: { flexGrow: 1, padding: esp.lg, paddingTop: 60, gap: esp.md },
-  titulo: { ...texto.titulo, color: cores.tinta },
   p: { ...texto.corpo, color: cores.apagado },
   motivo: { ...texto.corpo, color: cores.tinta },
   rodape: {
