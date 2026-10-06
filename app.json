@@ -22,7 +22,6 @@
       "expo-secure-store"
     ],
     "extra": {
-      "apiUrl": "https://cadastro-familias-api.exemplo.com.br",
       "router": {},
       "eas": {
         "projectId": "faa4396a-1860-408f-a254-ec8caec0873c"

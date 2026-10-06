@@ -6,7 +6,8 @@
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
-    "apk": "eas build -p android --profile apk",
+    "conferir-apk": "node scripts/conferir-apk.mjs",
+    "apk": "node scripts/conferir-apk.mjs && eas build -p android --profile apk",
     "lint": "expo lint",
     "teste": "jest"
   },
