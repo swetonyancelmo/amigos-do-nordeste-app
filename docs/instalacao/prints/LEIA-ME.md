@@ -22,4 +22,4 @@ Regras:
   nem família. Use um código já usado ou inventado.
 - Recorte a barra de notificações se aparecer mensagem pessoal.
 - Circule o botão a tocar em vermelho — é o que a agente vai procurar.
-- Anote no `gerar-apk.md` o aparelho e a versão do Android usados.
+- Anote na tabela do passo 6 do `DEPLOY-APK.md` o aparelho e a versão do Android usados.

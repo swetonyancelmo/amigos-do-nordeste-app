@@ -44,27 +44,29 @@ npx jest                # ou `npm run teste` (não existe script "test")
 Para apontar para a API local, copie `.env.example` para `.env` e ponha o IP
 da máquina na rede em `EXPO_PUBLIC_API_URL` (nunca `localhost`: no celular é o
 próprio celular). Reinicie o `npx expo start` depois de mudar. `http://` só
-funciona no Expo Go; o APK de release exige a API em `https://`. Sem `.env`,
-vale o `extra.apiUrl` do `app.json`.
+funciona no Expo Go; o APK de release exige a API em `https://`, que fica no
+`env` do perfil `apk` do `eas.json` (o `app.config.js` recusa o build sem ela).
 
-O código de convite sai do painel (API: `POST /api/agentes`, ou o
+O código de convite sai do painel (**Agentes → Nova agente**; na API, `POST /api/agentes`; ou o
 `semear.sh` da skill `rodar-api-local` do repositório da API).
 
 ## Gerar o APK
 
+Siga **[`docs/DEPLOY-APK.md`](docs/DEPLOY-APK.md)**: conta no EAS, keystore,
+checagem, build, teste de ponta a ponta, link de download e o texto que vai
+para a agente. Em resumo:
+
 ```bash
-npm install -g eas-cli
-eas login
-eas build -p android --profile apk
+npm install -g eas-cli && eas login
+npm run conferir-apk    # não gasta build: confere perfil, URL https e as rotas da API publicada
+npm run apk             # roda a conferência de novo e, se passar, o eas build
 ```
 
-O perfil `apk` do `eas.json` já força `buildType: apk` — sem isso o EAS gera um
-`.aab`, que **não instala direto no celular**. O plano gratuito do EAS tem fila,
-então gere com antecedência no dia da entrega.
-
-Antes de gerar, veja o checklist em `docs/gerar-apk.md` (URL da API,
-`versionCode`, keystore). O passo a passo que vai para a agente, com prints,
-está em `docs/instalacao/instalar-no-celular.md`.
+O perfil `apk` do `eas.json` força `buildType: apk` (um `.aab` não instala no
+celular) e sobe o `versionCode` sozinho a cada build. O plano gratuito do EAS
+tem 15 builds Android por mês e fila que passa de uma hora: gere com
+antecedência. O passo a passo com prints para a agente está em
+`docs/instalacao/instalar-no-celular.md`.
 
 ---
 

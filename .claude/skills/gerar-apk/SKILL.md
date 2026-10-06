@@ -5,62 +5,61 @@ description: Conduz a geração e a entrega do APK do app de pré-cadastro pelo 
 
 # Gerar e entregar o APK
 
-A referência completa é `docs/gerar-apk.md`, e o passo a passo para a agente
-está em `docs/instalacao/instalar-no-celular.md`. Esta skill é o roteiro.
-Gerar o build é uma ação externa (fila no EAS, conta do projeto): confirme com
-o usuário antes de rodar `eas build`.
+A referência completa é `docs/DEPLOY-APK.md` (inclui a seção que vai para a
+agente); a versão com prints para ela está em
+`docs/instalacao/instalar-no-celular.md`. Esta skill é o roteiro.
+
+Gerar o build é uma ação externa e **gasta uma das 15 builds Android do mês**
+do plano gratuito (fila que passa de 90 minutos): confirme com o usuário antes
+de rodar `eas build` / `npm run apk`.
 
 ## Antes de gerar: verifique você mesmo
 
 ```bash
 git status --short && git branch --show-current     # main, sem nada fora do commit
-jq '.expo.extra.apiUrl, .expo.android.versionCode, .expo.version' app.json
-npm ci --dry-run                                     # o EAS roda npm ci, mais rígido que o install local
-npx jest && npm run lint
+npm ci && npx jest && npx tsc --noEmit && npm run lint
+npx expo-doctor                                     # patch atrás em pacotes expo-* não bloqueia; o resto sim
+npm run conferir-apk                                # perfil, URL https, /api/saude e as 4 rotas no Swagger publicado
 ```
 
-- **`extra.apiUrl`** precisa ser a API de produção com `https://`. O valor de
-  exemplo (`cadastro-familias-api.exemplo.com.br`) gera um APK que instala,
-  abre e não ativa. `http://` é bloqueado em build de release.
-- **`android.versionCode`** precisa ser **maior** que o do APK que já está nos
-  celulares, senão o Android recusa instalar por cima. Suba `version` junto
-  (`0.1.0` → `0.1.1`).
+- A URL de produção fica em `build.apk.env.EXPO_PUBLIC_API_URL` no
+  `eas.json`. Com `APP_BUILD_RELEASE=1`, o `app.config.js` recusa montar o
+  app sem `https://` real; nada de URL no `app.json`.
+- O `versionCode` sobe sozinho (`cli.appVersionSource: "remote"` +
+  `autoIncrement`). O que se sobe à mão é a `version` (`0.1.1` → `0.1.2`).
+  `eas build:version:get -p android` mostra o atual.
 - `react` e `react-dom` precisam ter a mesma versão fixada no `package.json`.
 
-Aponte ao usuário qualquer item que não passe, antes de gerar.
+Aponte ao usuário qualquer item que não passe, antes de gerar. Se
+`conferir-apk` falhar na API, **não gere**: o APK travaria na ativação.
 
 ## Gerar
 
 ```bash
 npm install -g eas-cli      # o pacote é eas-cli; `npx eas` não resolve
 eas login                   # conta com acesso a @swetonyancelmo/cadastro-familias-app
-npm run apk                 # = eas build -p android --profile apk
+npm run apk                 # conferir-apk + eas build -p android --profile apk
 ```
 
-- O perfil `apk` força `buildType: apk`. Um `.aab` não instala no celular.
 - Se o EAS perguntar se deve **gerar uma keystore nova**, pare: a conta está
   errada. Keystore diferente obriga a desinstalar o app, e desinstalar apaga o
   SQLite com os cadastros não enviados.
 - Erro `request to https://api.expo.dev/graphql failed` sem motivo é
   instabilidade de rede; tente de novo.
-- O plano gratuito tem fila que pode passar de uma hora. Não gere na véspera
-  da entrega.
 
 ## Entregar
 
-- Mande o **link** do build (abre no Chrome) e, **em outra mensagem**, o
-  código de convite da agente (criado hoje direto na tabela `agente` da API).
-- Links do EAS expiram. Para durar, baixe o `.apk` e publique num lugar da
-  associação.
-- Antes de pedir para a agente atualizar, confirme que a fila dela está vazia
-  (tudo enviado).
-- Registre na tabela de testes de `docs/gerar-apk.md`: data, aparelho,
-  versão, quem testou e onde travou.
+- Teste de ponta a ponta do passo 6 do `DEPLOY-APK.md` num Android de verdade,
+  com dado inventado, **antes** de qualquer link sair do time.
+- Publicação: release no repositório público só de downloads
+  (`amigos-do-nordeste-apk`), arquivo sempre `cadastro-amigos-do-nordeste.apk`,
+  link fixo `…/releases/latest/download/cadastro-amigos-do-nordeste.apk`.
+- O código de convite sai do painel (**Agentes → Nova agente**), vai em
+  mensagem separada do link e vale uma vez.
+- Antes de pedir para a agente atualizar, a fila dela vazia (tudo enviado).
 
-## Atualização sem APK novo
+## Atualização sem APK
 
-O projeto tem `expo-updates` com `runtimeVersion` pela versão do app. Mudança
-só de JavaScript pode ir por update over-the-air no canal `apk`. Mudança de
-dependência nativa, de permissão ou de `app.json` exige APK novo. Mudança de
-schema SQLite pode ir por OTA (os passos rodam na abertura), mas teste antes
-num aparelho com dados.
+Não use `eas update` por enquanto: ele não lê o `env` do perfil do `eas.json`,
+e a atualização sairia sem a URL da API. Ver "Como atualizar o app depois" no
+`DEPLOY-APK.md`.
