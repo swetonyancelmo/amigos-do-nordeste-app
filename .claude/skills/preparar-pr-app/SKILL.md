@@ -31,7 +31,7 @@ Procure:
 - data de nascimento ou nome virando obrigatório;
 - estilo solto (cor, tamanho literal) em vez de `@/design/tokens`, e alvo de toque abaixo de `ALVO_MINIMO`;
 - regra nova na tela sem módulo e teste em `src/dados/`;
-- `extra.apiUrl` do `app.json` trocado para uma URL local (`localhost`, IP da rede) que não deveria ser commitada;
+- URL local (`localhost`, IP da rede) commitada no `app.json` ou no `eas.json`: a local fica só no `.env`, a de produção (`https://`) no `env` do perfil `apk`;
 - dado real de família em teste, print ou exemplo;
 - mudança no corpo enviado para `/api/pre-cadastros` sem o lado da API.
 

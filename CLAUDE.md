@@ -19,9 +19,10 @@ quase toda decisão não óbvia do projeto.
 npm install
 npx expo start        # roda no Expo Go
 npm run android        # expo run:android
-npm run lint           # expo lint; no-console é erro (privacidade). ATENÇÃO: eslint não está nas dependências e o comando falha
+npm run lint           # expo lint; no-console é erro (privacidade)
 npx jest               # ou `npm run teste`: NÃO existe script "test", então `npm test` falha
-npm run apk            # eas build -p android --profile apk
+npm run conferir-apk   # antes de gastar build: perfil, URL https, rotas da API publicada
+npm run apk            # conferir-apk + eas build -p android --profile apk
 ```
 
 Rodar um único teste: `npx jest src/dados/__tests__/gravador.test.ts`.
@@ -34,11 +35,12 @@ Nunca importe esse módulo fora de teste.
 
 Para apontar para uma API local, copie `.env.example` para `.env` e defina
 `EXPO_PUBLIC_API_URL` com o IP da máquina na rede (`app.config.js` lê a
-variável; sem ela vale `extra.apiUrl` do `app.json`, hoje um placeholder,
-`cadastro-familias-api.exemplo.com.br`). Nunca commite IP local no `app.json`.
-`http://` só funciona no Expo Go; o APK de release exige `https://`. O perfil `apk` do `eas.json` força `buildType: apk`; sem isso o EAS gera
-`.aab`, que não instala direto no celular. Antes de gerar, siga
-`docs/gerar-apk.md` (URL `https://` real, subir `versionCode`, conta EAS certa).
+variável). A URL de produção fica em `build.apk.env` do `eas.json`, junto com
+`APP_BUILD_RELEASE=1`, que faz o `app.config.js` recusar o build sem
+`https://` real. Nunca commite IP local. `http://` só funciona no Expo Go. O
+perfil `apk` força `buildType: apk` (sem isso o EAS gera `.aab`, que não
+instala no celular) e o `versionCode` sobe sozinho no EAS
+(`appVersionSource: "remote"`). Antes de gerar, siga `docs/DEPLOY-APK.md`.
 
 ## As quatro decisões que moldam tudo
 
@@ -184,8 +186,10 @@ local com `MOTIVO_RECUSA`; 401/403 para o envio e leva à tela `sem-acesso`,
 que desativa o aparelho (o token, não a fila) para ativar com código novo.
 
 Distribuição: projeto EAS `@swetonyancelmo/cadastro-familias-app`, com
-keystore já gerada e `expo-updates` configurado. O guia de instalação para a
-agente está em `docs/instalacao/instalar-no-celular.md`.
+keystore já gerada e `expo-updates` configurado (não usar `eas update`: ele
+não lê o `env` do `eas.json`). Passo a passo de build e distribuição em
+`docs/DEPLOY-APK.md`; o guia com prints para a agente em
+`docs/instalacao/instalar-no-celular.md`.
 
 Protótipo: [Figma do app](https://www.figma.com/design/SA3REA1kBhYYeiJf6dxH1J)
 

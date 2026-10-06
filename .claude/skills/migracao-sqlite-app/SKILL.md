@@ -49,6 +49,7 @@ passo roda uma vez e `PRAGMA user_version` guarda até onde o aparelho chegou.
    npx jest && npm run lint
    ```
 6. **Entrega:** o passo novo roda na próxima abertura do app com o código novo,
-   seja por APK novo (suba o `android.versionCode` no `app.json`) ou por update
-   do `expo-updates`. Veja a skill `gerar-apk`. Antes de liberar, teste num
+   por APK novo (suba a `version` no `app.json`; o `versionCode` sobe sozinho no
+   EAS). Não use `eas update` enquanto ele não estiver preparado (ver
+   `docs/DEPLOY-APK.md`). Veja a skill `gerar-apk`. Antes de liberar, teste num
    aparelho que tenha cadastros não enviados.

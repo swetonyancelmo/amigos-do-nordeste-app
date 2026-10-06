@@ -6,3 +6,14 @@ ios/
 *.log
 .env
 .env.local
+
+# Credenciais de assinatura baixadas com `eas credentials` (backup da
+# keystore). Ficam num cofre da associação, nunca aqui: docs/DEPLOY-APK.md.
+credentials.json
+credentials/
+*.jks
+*.keystore
+
+# APK baixado do EAS para publicar no release
+*.apk
+*.aab

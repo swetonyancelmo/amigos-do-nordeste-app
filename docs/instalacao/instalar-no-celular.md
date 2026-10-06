@@ -15,13 +15,13 @@ outro nome, procure o que mais se parece.
 ## 1. Abra o link
 
 Toque no link que você recebeu. Se ele abrir dentro do WhatsApp, toque nos
-três pontinhos **⋮** e escolha **Abrir no Chrome**.
+três pontinhos **⋮** e escolha **Abrir no Chrome**. O download começa sozinho.
 
 ![Link aberto no Chrome](prints/01-link-no-chrome.png)
 
 ## 2. Baixe o arquivo
 
-Toque em **Baixar** (ou **Download**, ou **Install**).
+Se o Chrome perguntar se quer baixar, toque em **Baixar** (ou **Download**).
 
 Se o celular avisar que o arquivo **pode ser perigoso**, toque em
 **Baixar mesmo assim**. O arquivo é seguro: é o app da associação.
@@ -33,7 +33,7 @@ Se o celular avisar que o arquivo **pode ser perigoso**, toque em
 Quando terminar, toque em **Abrir** na mensagem que aparece embaixo da tela.
 
 Se a mensagem sumiu: puxe a barra de cima da tela para baixo e toque em
-**Cadastro Amigos do Nordeste.apk**.
+**cadastro-amigos-do-nordeste.apk**.
 
 ![Abrir o arquivo baixado](prints/03-abrir-arquivo.png)
 
@@ -84,6 +84,8 @@ Toque em **Abrir**. Depois, o app fica na tela do celular com o nome
 
 Na tela **Bem-vinda!**, digite o **código de convite** (6 números) que você
 recebeu e toque em **Continuar**. Esse passo precisa de internet, só dessa vez.
+Se demorar ou der erro, espere **1 minuto** e tente de novo: às vezes o
+sistema está acordando.
 
 O código vale para um celular só. Não repasse para outra pessoa.
 
