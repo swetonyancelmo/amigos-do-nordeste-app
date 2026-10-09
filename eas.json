@@ -13,7 +13,7 @@
       "autoIncrement": true,
       "env": {
         "APP_BUILD_RELEASE": "1",
-        "EXPO_PUBLIC_API_URL": "PREENCHER-com-a-URL-https-da-API-publicada"
+        "EXPO_PUBLIC_API_URL": "https://cadastro-familias-api.onrender.com"
       }
     }
   }
