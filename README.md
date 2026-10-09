@@ -22,7 +22,8 @@ React Native com Expo · SQLite local · distribuição por APK.
 | Tela inicial com o contador da fila | `app/inicio.tsx` |
 | Cadastro em três passos: família, pessoas, revisar | `app/cadastro/` |
 | Meus cadastros e cadastro devolvido | `app/enviados.tsx`, `app/cadastro/devolvido.tsx` |
-| Testes da camada de dados | `src/dados/__tests__/` |
+| Telas de "envio sem internet" e "celular sem acesso" (código reemitido) | `app/sem-internet.tsx`, `app/sem-acesso.tsx` |
+| Testes da camada de dados e de acessibilidade das telas | `src/dados/__tests__/`, `src/__tests__/acessibilidade/` |
 
 Depois de enviar (ou pelo botão "Ver se a associação já respondeu" em Meus
 cadastros), o app consulta `GET /api/pre-cadastros/situacao`: o aprovado vira
@@ -41,6 +42,8 @@ npm run lint
 npx jest                # ou `npm run teste` (não existe script "test")
 ```
 
+Não há CI neste repositório: rode o lint e os testes antes de abrir o PR.
+
 Para apontar para a API local, copie `.env.example` para `.env` e ponha o IP
 da máquina na rede em `EXPO_PUBLIC_API_URL` (nunca `localhost`: no celular é o
 próprio celular). Reinicie o `npx expo start` depois de mudar. `http://` só
@@ -48,7 +51,12 @@ funciona no Expo Go; o APK de release exige a API em `https://`, que fica no
 `env` do perfil `apk` do `eas.json` (o `app.config.js` recusa o build sem ela).
 
 O código de convite sai do painel (**Agentes → Nova agente**; na API, `POST /api/agentes`; ou o
-`semear.sh` da skill `rodar-api-local` do repositório da API).
+`semear.sh` da skill `rodar-api-local` do repositório da API). O código tem 6
+dígitos e vale uma vez; "Gerar novo código" no painel desliga o celular anterior.
+
+**URL da API no APK:** `build.apk.env.EXPO_PUBLIC_API_URL` no `eas.json` já aponta
+para `https://cadastro-familias-api.onrender.com`. Se a API mudar de endereço,
+troque ali e gere outro APK.
 
 ## Gerar o APK
 
@@ -134,6 +142,7 @@ app/                      rotas (expo-router)
   enviados.tsx            meus cadastros
   enviando.tsx            progresso do envio
   sem-internet.tsx        envio sem rede
+  sem-acesso.tsx          token recusado: ativar de novo sem perder a fila
 src/
   design/tokens.ts        cores, espaçamento, escala de texto, alvo mínimo
   design/componentes.tsx  Botao, Campo, Opcoes, Progresso, Selo, Aviso…
@@ -145,7 +154,8 @@ src/
   dados/api.ts            cliente HTTP
   dados/tipos.ts          tipos compartilhados
   dados/*.ts              regras de cada tela, testáveis sem React
-  dados/__tests__/        testes (jest)
+  dados/__tests__/        testes de regra (jest)
+  __tests__/acessibilidade/  testes de tela (TalkBack: papel e nome acessível)
   sessao/sessao.tsx       ativação e trava por PIN
   testes/sqliteEmNode.ts  SQLite falso para os testes
 ```

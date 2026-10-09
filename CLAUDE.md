@@ -27,6 +27,10 @@ npm run apk            # conferir-apk + eas build -p android --profile apk
 
 Rodar um único teste: `npx jest src/dados/__tests__/gravador.test.ts`.
 
+Este repositório **não tem CI**: antes do PR, rode `npm run lint` e `npx jest`
+(conferido em 08/10/2026: 17 suítes e 160 testes passando; o lint tem apenas
+avisos de estilo, nenhum erro).
+
 Os testes rodam em Node com `jest-expo`. Para o SQLite, use
 `jest.mock('expo-sqlite', () => jest.requireActual('../../testes/sqliteEmNode'))`:
 `src/testes/sqliteEmNode.ts` implementa a parte do `expo-sqlite` que o app usa
@@ -96,7 +100,7 @@ src/
   design/tokens.ts         cores, espaçamento, tipografia, ALVO_MINIMO
   design/componentes.tsx   Titulo, Carregando, Botao, Campo, Marcar, Destaque, ItemLista, Opcoes, Progresso, Barra, Selo, Aviso, useAnunciar
   dados/banco.ts           SQLite + migrações versionadas (PRAGMA user_version)
-  dados/tipos.ts           PreCadastro, Pessoa, Situacao — tipos compartilhados
+  dados/tipos.ts           PreCadastro, Pessoa, Situacao, SituacaoNoServidor — tipos compartilhados
   dados/fila.ts            toda leitura/escrita da fila de saída
   dados/gravador.ts        debouncer de escrita sem duas gravações se cruzando
   dados/comunidades.ts     lista de comunidades (GET /api/comunidades/opcoes → SQLite, offline)
@@ -112,6 +116,10 @@ src/
   dados/devolvido.ts       motivo da devolução e se dá para corrigir
   sessao/sessao.tsx        contexto de ativação/PIN (SecureStore)
   testes/sqliteEmNode.ts   expo-sqlite falso sobre node:sqlite, só para testes
+  testes/acessibilidade.ts ajudantes dos testes de tela (busca por papel e nome acessível)
+  __tests__/acessibilidade/ testes de tela: ativação e PIN, pré-cadastro, envio
+docs/                      DEPLOY-APK.md, gerar-apk.md, instalacao/ (guia com prints para a agente), decisoes/
+scripts/conferir-apk.mjs   confere perfil, URL https e rotas da API publicada antes de gastar build
 ```
 
 Padrão do projeto: **a regra de cada tela fica em `src/dados/*.ts`, sem
@@ -149,7 +157,13 @@ hash do PIN vivem no `expo-secure-store`, nunca em SQLite.
 `src/dados/banco.ts` usa uma lista `PASSOS` versionada (estilo Flyway): cada
 mudança de schema é um passo novo acrescentado ao array, nunca uma edição de
 passo já existente, porque o aparelho pode estar em qualquer versão anterior
-quando o APK atualiza. Versão atual controlada via `PRAGMA user_version`.
+quando o APK atualiza. Versão atual controlada via `PRAGMA user_version`; hoje
+são 3 passos (tabelas iniciais, lista de comunidades, sexo no formato do enum
+da API), então o próximo é o passo 4.
+
+O que o app guarda por pessoa: nome, `cadastroIncompleto`, sexo, data de
+nascimento, `idadeEstimada` + `idadeEstimadaEm` e ordem. Parentesco, série,
+roupa e calçado **não** são coletados aqui: quem revisa os preenche na aprovação.
 
 ### Design system
 
@@ -184,6 +198,13 @@ resposta `ACEITO` significa "recebido pelo servidor" (o app marca `ENVIADO`),
 não "aprovado". Recusas permanentes não ficam em loop: 400 vira `DEVOLVIDO`
 local com `MOTIVO_RECUSA`; 401/403 para o envio e leva à tela `sem-acesso`,
 que desativa o aparelho (o token, não a fila) para ativar com código novo.
+
+**URL de produção:** o perfil `apk` do `eas.json` aponta para
+`https://cadastro-familias-api.onrender.com` (`EXPO_PUBLIC_API_URL`); o
+`app.config.js` recusa o build de release se deixar de ser uma URL `https://`
+real. Se a API mudar de endereço, troque ali e gere outro APK. Quando o envio recebe 401/403 (token recusado), a tela `sem-acesso` leva a ativar
+de novo sem perder a fila. A agente pode apagar um cadastro devolvido na tela
+`cadastro/devolvido`.
 
 Distribuição: projeto EAS `@swetonyancelmo/cadastro-familias-app`, com
 keystore já gerada e `expo-updates` configurado (não usar `eas update`: ele
